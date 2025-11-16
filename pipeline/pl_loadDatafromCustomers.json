@@ -114,7 +114,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "DelimitedText_LoadingAllFiles",
+						"referenceName": "DelimitedText_SubCategory",
 						"type": "DatasetReference"
 					}
 				],
