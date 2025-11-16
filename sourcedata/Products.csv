@@ -1,0 +1,201 @@
+ProductID,ProductName,CategoryID,SubcategoryID,Brand,CostPrice,SellingPrice
+101,Levi's Jeans,3,32,Levi's,32.7,43.44
+102,The North Face Yoga Mat,5,51,The North Face,103.6,182.59
+103,Sony Headphones,1,12,Sony,104.78,205.28
+104,Sony Video Game,7,71,Sony,71.75,89.97
+105,Neutrogena Moisturizer,6,62,Neutrogena,8.85,11.62
+106,Nintendo Action Figure,7,71,Nintendo,22.59,30.7
+107,H&M Jeans,3,33,H&M,64.91,84.19
+108,Maybelline Foundation,6,61,Maybelline,22.82,30.36
+109,Mattel Puzzle,7,72,Mattel,76.72,96.95
+110,Adidas Running Shoes,5,52,Adidas,77.8,113.87
+111,Olay Moisturizer,6,62,Olay,19.3,26.37
+112,Lenovo Laptop,1,13,Lenovo,74.02,103.59
+113,Zara Sneakers,3,31,Zara,58.58,87.99
+114,Mattel Action Figure,7,72,Mattel,74.39,93.96
+115,Bosch Car Mat,8,82,Bosch,108.55,161.77
+116,Bosch Battery,8,81,Bosch,149.22,187.11
+117,Under Armour Basketball,5,51,Under Armour,131.57,218.0
+118,JBL Tablet,1,13,JBL,389.68,652.52
+119,Stanley Car Mat,8,82,Stanley,75.17,107.79
+120,Under Armour Jacket,3,32,Under Armour,22.13,44.18
+121,Hasbro Board Game,7,72,Hasbro,41.77,65.88
+122,Microsoft Action Figure,7,71,Microsoft,40.88,65.31
+123,Samsung Headphones,1,15,Samsung,665.58,946.41
+124,Black+Decker Battery,8,81,Black+Decker,111.26,141.89
+125,H&M Jacket,3,32,H&M,26.64,37.97
+126,JBL Smartphone,1,14,JBL,372.95,691.75
+127,CD: Profit-focused web-enabled structure,4,42,Penguin,11.77,21.24
+128,Ninja Air Purifier,2,21,Ninja,216.17,277.78
+129,Book: Managed global core,4,42,Disney,13.52,22.88
+130,Nintendo Puzzle,7,72,Nintendo,5.89,11.13
+131,Bose Laptop,1,14,Bose,993.13,1544.56
+132,Instant Pot Blender,2,21,Instant Pot,78.32,105.74
+133,Book: Diverse bifurcated hardware,4,43,Random House,7.39,11.03
+134,Columbia Running Shoes,5,51,Columbia,27.97,38.93
+135,DVD: Down-sized systematic hub,4,43,Random House,10.5,17.27
+136,Under Armour Basketball,5,52,Under Armour,53.89,77.92
+137,Book: Mandatory transitional encoding,4,41,Disney,25.61,34.27
+138,Columbia Yoga Mat,5,51,Columbia,157.74,280.39
+139,Nike Basketball,5,52,Nike,38.93,63.09
+140,Stanley Tire,8,81,Stanley,141.91,251.96
+141,Nike Running Shoes,5,51,Nike,117.75,191.5
+142,DVD: Cross-platform 4thgeneration benchmark,4,42,HarperCollins,5.0,7.5
+143,Black+Decker Air Purifier,2,21,Black+Decker,297.37,393.42
+144,Book: Upgradable foreground open system,4,41,Disney,3.58,5.65
+145,Black+Decker Tool Set,8,82,Black+Decker,51.88,100.99
+146,Adidas Running Shoes,5,52,Adidas,35.97,57.33
+147,Nike Jacket,3,31,Nike,51.2,75.05
+148,Under Armour Tent,5,51,Under Armour,39.54,76.26
+149,Nintendo Video Game,7,71,Nintendo,17.33,21.92
+150,Nike T-Shirt,3,31,Nike,15.68,27.16
+151,Nike Jacket,3,31,Nike,41.31,55.42
+152,DVD: Compatible eco-centric approach,4,42,Disney,27.36,45.73
+153,HP Smartphone,1,12,HP,1015.0,1470.28
+154,KitchenAid Blender,2,22,KitchenAid,107.34,166.78
+155,Hasbro Board Game,7,71,Hasbro,64.56,83.22
+156,Hasbro Video Game,7,71,Hasbro,14.13,18.48
+157,DVD: Progressive next generation complexity,4,43,Random House,20.41,37.97
+158,Microsoft Puzzle,7,72,Microsoft,7.47,12.64
+159,Lenovo Smartphone,1,12,Lenovo,648.82,1243.34
+160,Hasbro Action Figure,7,71,Hasbro,51.97,79.68
+161,LG Laptop,1,11,LG,175.28,224.06
+162,DVD: Versatile exuding flexibility,4,41,Scholastic,18.4,28.74
+163,Maybelline Moisturizer,6,61,Maybelline,9.06,14.16
+164,Samsung Laptop,1,15,Samsung,576.67,1036.28
+165,DVD: Monitored dedicated solution,4,43,Penguin,19.86,31.88
+166,Microsoft Video Game,7,71,Microsoft,14.82,19.33
+167,Hasbro Video Game,7,72,Hasbro,30.1,45.51
+168,Under Armour T-Shirt,3,32,Under Armour,22.43,37.47
+169,CD: Proactive modular conglomeration,4,43,HarperCollins,30.47,44.74
+170,Shark Blender,2,22,Shark,202.76,376.04
+171,Nike Tent,5,51,Nike,202.48,257.23
+172,DVD: Triple-buffered value-added encryption,4,43,Penguin,18.09,29.51
+173,Microsoft Video Game,7,72,Microsoft,12.0,18.77
+174,Black+Decker Tool Set,8,81,Black+Decker,172.66,258.99
+175,H&M Sneakers,3,31,H&M,147.24,193.73
+176,H&M Jacket,3,31,H&M,90.65,155.9
+177,Nintendo Action Figure,7,71,Nintendo,44.93,78.13
+178,Sony Board Game,7,72,Sony,33.04,43.42
+179,Under Armour Basketball,5,52,Under Armour,80.27,113.98
+180,Gap Dress,3,33,Gap,104.02,136.02
+181,CD: Intuitive background utilization,4,43,Random House,28.29,46.36
+182,CD: Open-architected zero-defect structure,4,41,Penguin,15.13,23.43
+183,Nike Basketball,5,51,Nike,167.44,290.23
+184,LG Headphones,1,12,LG,370.91,596.31
+185,H&M Dress,3,33,H&M,132.84,176.88
+186,Book: Sharable zero administration capability,4,42,Penguin,35.04,46.01
+187,Levi's Dress,3,31,Levi's,23.68,34.27
+188,L'Oreal Perfume,6,61,L'Oreal,59.85,87.18
+189,H&M T-Shirt,3,32,H&M,25.31,32.74
+190,Adidas Tent,5,52,Adidas,26.9,37.26
+191,Nike T-Shirt,3,31,Nike,64.69,106.22
+192,Ninja Blender,2,21,Ninja,195.47,353.1
+193,Lenovo Tablet,1,13,Lenovo,742.06,1106.93
+194,Black+Decker Vacuum Cleaner,2,21,Black+Decker,33.21,49.61
+195,Maybelline Moisturizer,6,62,Maybelline,37.78,73.33
+196,Hasbro Action Figure,7,71,Hasbro,47.6,91.88
+197,Book: Multi-tiered modular benchmark,4,43,HarperCollins,27.65,45.29
+198,Dell Headphones,1,12,Dell,1170.42,1854.62
+199,Columbia Basketball,5,51,Columbia,101.33,139.94
+200,Microsoft Action Figure,7,71,Microsoft,24.14,41.78
+201,CD: Distributed intermediate software,4,42,Penguin,11.69,16.43
+202,Black+Decker Battery,8,81,Black+Decker,51.4,70.93
+203,Sony Puzzle,7,72,Sony,64.93,86.72
+204,HP Headphones,1,11,HP,181.4,312.32
+205,Nike Sneakers,3,33,Nike,85.32,144.61
+206,Ninja Air Purifier,2,23,Ninja,126.64,218.12
+207,H&M Jacket,3,31,H&M,94.28,173.02
+208,The North Face Yoga Mat,5,51,The North Face,202.36,264.59
+209,Zara Dress,3,31,Zara,38.31,57.12
+210,Nintendo Video Game,7,72,Nintendo,28.41,44.92
+211,Adidas Jeans,3,33,Adidas,78.56,144.66
+212,Gap Jacket,3,32,Gap,115.69,175.6
+213,Lenovo Smartphone,1,13,Lenovo,346.3,473.39
+214,Book: User-centric bottom-line policy,4,43,Scholastic,7.11,13.24
+215,LG Smart Watch,1,11,LG,227.76,304.17
+216,Stanley Tire,8,82,Stanley,247.98,395.45
+217,Bosch Tire,8,82,Bosch,294.72,397.41
+218,Columbia Basketball,5,51,Columbia,66.25,116.95
+219,Michelin Tool Set,8,82,Michelin,145.96,249.02
+220,JBL Smartphone,1,11,JBL,1050.26,1469.65
+221,Book: Decentralized upward-trending encryption,4,43,HarperCollins,7.45,13.95
+222,HP Headphones,1,15,HP,608.41,826.56
+223,Levi's Sneakers,3,32,Levi's,35.07,65.03
+224,3M Tire,8,82,3M,143.77,231.16
+225,Sony Video Game,7,71,Sony,65.8,90.75
+226,Michelin Battery,8,81,Michelin,104.3,146.12
+227,Black+Decker Vacuum Cleaner,2,22,Black+Decker,71.19,105.75
+228,Shark Coffee Maker,2,21,Shark,66.69,115.49
+229,Olay Foundation,6,62,Olay,30.68,44.43
+230,Book: Multi-tiered responsive budgetary management,4,42,Scholastic,21.06,36.54
+231,DVD: Pre-emptive secondary hardware,4,41,Disney,8.75,13.11
+232,Black+Decker Tool Set,8,82,Black+Decker,15.4,21.55
+233,Nivea Moisturizer,6,62,Nivea,30.64,53.34
+234,H&M Jacket,3,31,H&M,39.73,65.11
+235,Nike Dress,3,32,Nike,50.26,93.26
+236,Ninja Air Purifier,2,22,Ninja,79.7,109.2
+237,Under Armour Tent,5,51,Under Armour,115.8,180.35
+238,Levi's T-Shirt,3,31,Levi's,94.55,152.72
+239,Black+Decker Battery,8,82,Black+Decker,230.56,335.99
+240,Samsung Smartphone,1,14,Samsung,821.83,1117.42
+241,Instant Pot Blender,2,21,Instant Pot,310.25,475.56
+242,Dyson Blender,2,22,Dyson,59.69,81.92
+243,Under Armour Tent,5,52,Under Armour,74.52,100.89
+244,Samsung Smartphone,1,14,Samsung,989.5,1793.81
+245,Adidas Dress,3,31,Adidas,62.53,103.5
+246,Nivea Perfume,6,61,Nivea,52.66,84.69
+247,DVD: Balanced even-keeled installation,4,42,Scholastic,8.5,11.57
+248,DVD: Ergonomic coherent Internet solution,4,43,Random House,10.18,14.84
+249,L'Oreal Shampoo,6,62,L'Oreal,61.92,90.98
+250,Shark Blender,2,23,Shark,48.76,77.11
+251,Cuisinart Coffee Maker,2,23,Cuisinart,223.52,413.56
+252,Shark Vacuum Cleaner,2,22,Shark,62.64,93.66
+253,Black+Decker Tool Set,8,81,Black+Decker,184.13,319.44
+254,H&M T-Shirt,3,31,H&M,18.65,24.74
+255,Bosch Car Mat,8,82,Bosch,136.69,269.4
+256,Michelin Battery,8,82,Michelin,112.54,155.17
+257,Dell Headphones,1,14,Dell,516.27,868.82
+258,JBL Headphones,1,13,JBL,1373.1,1718.43
+259,Maybelline Foundation,6,61,Maybelline,5.34,9.0
+260,DVD: Digitized leadingedge focus group,4,43,Random House,14.55,23.34
+261,LG Smartphone,1,12,LG,660.76,1295.91
+262,JBL Tablet,1,13,JBL,34.13,54.9
+263,CD: Fundamental even-keeled Graphical User Interface,4,42,Penguin,30.49,41.95
+264,Nike Jeans,3,31,Nike,98.95,167.81
+265,Zara Sneakers,3,32,Zara,91.28,138.23
+266,Levi's Jeans,3,32,Levi's,86.69,142.33
+267,The North Face Running Shoes,5,52,The North Face,119.46,199.89
+268,Stanley Tire,8,82,Stanley,23.74,34.31
+269,Neutrogena Moisturizer,6,62,Neutrogena,51.17,77.64
+270,Book: Centralized object-oriented pricing structure,4,43,Penguin,27.57,40.8
+271,Book: Focused upward-trending infrastructure,4,41,Random House,18.71,27.27
+272,Zara T-Shirt,3,31,Zara,68.44,90.27
+273,Microsoft Board Game,7,71,Microsoft,14.44,28.02
+274,Book: Open-architected real-time support,4,42,Disney,25.35,42.57
+275,Under Armour Sneakers,3,31,Under Armour,102.08,148.09
+276,3M Battery,8,81,3M,174.33,269.21
+277,Zara Sneakers,3,31,Zara,143.93,183.66
+278,Book: User-friendly 24hour moratorium,4,42,Random House,23.39,34.29
+279,L'Oreal Moisturizer,6,61,L'Oreal,16.28,23.58
+280,Black+Decker Tool Set,8,82,Black+Decker,126.72,211.33
+281,Sony Puzzle,7,71,Sony,8.87,11.98
+282,Neutrogena Perfume,6,62,Neutrogena,67.35,86.42
+283,Under Armour Running Shoes,5,51,Under Armour,230.68,289.88
+284,Book: Proactive intangible hardware,4,41,Penguin,26.76,46.67
+285,The North Face Basketball,5,52,The North Face,105.71,134.29
+286,DVD: Seamless regional firmware,4,42,Random House,12.01,22.66
+287,Under Armour Yoga Mat,5,51,Under Armour,122.32,170.48
+288,CD: User-friendly real-time toolset,4,43,Penguin,24.95,41.73
+289,Shark Vacuum Cleaner,2,22,Shark,240.67,400.86
+290,LG Headphones,1,13,LG,1157.01,1590.79
+291,Olay Moisturizer,6,61,Olay,43.84,83.77
+292,Microsoft Video Game,7,72,Microsoft,73.6,99.22
+293,LG Smart Watch,1,14,LG,1295.53,1909.51
+294,DVD: Switchable heuristic toolset,4,41,Penguin,25.32,33.9
+295,Cuisinart Vacuum Cleaner,2,21,Cuisinart,263.85,346.9
+296,Olay Perfume,6,61,Olay,55.36,93.15
+297,H&M Sneakers,3,32,H&M,101.56,127.55
+298,Maybelline Foundation,6,62,Maybelline,38.87,57.41
+299,CD: Profound cohesive hub,4,41,HarperCollins,25.28,49.9
+300,Under Armour Jeans,3,31,Under Armour,20.93,30.11

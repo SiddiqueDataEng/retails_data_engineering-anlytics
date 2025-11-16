@@ -1,0 +1,11 @@
+StoreID,StoreName,City,State,Region,StoreType
+1,NYC Flagship,New York,NY,Northeast,Flagship
+2,LA Downtown,Los Angeles,CA,West,Standard
+3,Chicago Mall,Chicago,IL,Midwest,Standard
+4,Houston Plaza,Houston,TX,South,Outlet
+5,Miami Beach Store,Miami,FL,Southeast,Standard
+6,Seattle Center,Seattle,WA,Northwest,Standard
+7,Boston Commons,Boston,MA,Northeast,Flagship
+8,Phoenix Mall,Phoenix,AZ,Southwest,Outlet
+9,Denver Downtown,Denver,CO,Mountain,Standard
+10,Atlanta Plaza,Atlanta,GA,Southeast,Standard
