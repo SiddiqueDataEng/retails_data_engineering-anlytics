@@ -1,0 +1,12 @@
+{
+	"name": "AzureDataLakeStorage_sink",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://adls4salesdata.dfs.core.windows.net/",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDFCQTQ2Q0Q5LTI0MTctNEQzMS05QTE2LThCOEYwRTRDNTNCQV81OGVjMmVkMy02NzI2LTRjOWMtODc1Yy01OWRlMzJmN2UxM2MiDQp9"
+		}
+	}
+}
