@@ -1,0 +1,17 @@
+{
+	"name": "fs_localdatafolders",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "FileServer",
+		"typeProperties": {
+			"host": "C:\\Users\\DataEng\\Desktop\\DataTeam (SQL+Python)\\Project\\sourcedata",
+			"userId": "DataEng",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI0NGFkMTBiMS1lOTRjLTRiOTEtOTUyYy0wYjJhNTRmZmIxYmIiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "ASHIR",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
