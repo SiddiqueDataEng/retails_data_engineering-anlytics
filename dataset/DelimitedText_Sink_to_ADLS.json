@@ -5,6 +5,9 @@
 			"referenceName": "AzureDataLakeStorage_sink",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "destination"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {

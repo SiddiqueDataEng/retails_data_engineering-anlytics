@@ -5,6 +5,9 @@
 			"referenceName": "fs_localdatafolders",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "Source"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {

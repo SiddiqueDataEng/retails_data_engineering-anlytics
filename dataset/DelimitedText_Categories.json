@@ -1,5 +1,5 @@
 {
-	"name": "DelimitedText_Products",
+	"name": "DelimitedText_Categories",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "fs_localdatafolders",
@@ -13,7 +13,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "FileServerLocation",
-				"fileName": "Products.csv"
+				"fileName": "Categories.csv"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
@@ -22,31 +22,39 @@
 		},
 		"schema": [
 			{
-				"name": "ProductID",
+				"name": "CustomerID",
 				"type": "String"
 			},
 			{
-				"name": "ProductName",
+				"name": "FirstName",
 				"type": "String"
 			},
 			{
-				"name": "CategoryID",
+				"name": "LastName",
 				"type": "String"
 			},
 			{
-				"name": "SubcategoryID",
+				"name": "Email",
 				"type": "String"
 			},
 			{
-				"name": "Brand",
+				"name": "Phone",
 				"type": "String"
 			},
 			{
-				"name": "CostPrice",
+				"name": "City",
 				"type": "String"
 			},
 			{
-				"name": "SellingPrice",
+				"name": "State",
+				"type": "String"
+			},
+			{
+				"name": "Country",
+				"type": "String"
+			},
+			{
+				"name": "CreatedDate",
 				"type": "String"
 			}
 		]
