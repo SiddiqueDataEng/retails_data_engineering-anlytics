@@ -1,0 +1,9 @@
+{
+	"name": "adf4salesdata",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "c8469373-3e9c-4f5f-8972-edb4b3bfeeab",
+		"tenantId": "57ece8bf-9539-440b-8f6a-e5dde89c01df"
+	}
+}
