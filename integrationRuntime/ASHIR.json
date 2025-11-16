@@ -1,0 +1,7 @@
+{
+	"name": "ASHIR",
+	"properties": {
+		"type": "SelfHosted",
+		"description": "azure self-hosted integration runtime"
+	}
+}
