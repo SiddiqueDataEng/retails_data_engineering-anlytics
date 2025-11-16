@@ -323,7 +323,14 @@
 			{
 				"name": "CopyData_Subcategories",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "CopyData_Stores",
+						"dependencyConditions": [
+							"Skipped"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
