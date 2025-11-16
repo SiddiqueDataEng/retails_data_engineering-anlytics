@@ -63,7 +63,14 @@
 			{
 				"name": "CopyData_SubCategory",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "CopyData_Categories",
+						"dependencyConditions": [
+							"Skipped"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -119,9 +126,16 @@
 				]
 			},
 			{
-				"name": "CopyData_AllFiles",
+				"name": "Copy data1",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "CopyData_SubCategory",
+						"dependencyConditions": [
+							"Skipped"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -150,7 +164,7 @@
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
 							"quoteAllText": true,
-							"fileExtension": ".csv"
+							"fileExtension": ".txt"
 						}
 					},
 					"enableStaging": false,
@@ -165,7 +179,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "DelimitedText_LoadingAllFiles",
+						"referenceName": "DelimitedText_SalesTransactions",
 						"type": "DatasetReference"
 					}
 				],
