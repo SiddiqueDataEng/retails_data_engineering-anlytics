@@ -1,0 +1,35 @@
+{
+	"name": "DelimitedText_LoadingAllFiles",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "fs_localdatafolders",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "*.csv"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "SubcategoryID",
+				"type": "String"
+			},
+			{
+				"name": "SubcategoryName",
+				"type": "String"
+			},
+			{
+				"name": "CategoryID",
+				"type": "String"
+			}
+		]
+	}
+}
