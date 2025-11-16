@@ -1,0 +1,51 @@
+{
+	"name": "DelimitedText_Products",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "fs_localdatafolders",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "Products.csv"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "ProductID",
+				"type": "String"
+			},
+			{
+				"name": "ProductName",
+				"type": "String"
+			},
+			{
+				"name": "CategoryID",
+				"type": "String"
+			},
+			{
+				"name": "SubcategoryID",
+				"type": "String"
+			},
+			{
+				"name": "Brand",
+				"type": "String"
+			},
+			{
+				"name": "CostPrice",
+				"type": "String"
+			},
+			{
+				"name": "SellingPrice",
+				"type": "String"
+			}
+		]
+	}
+}
