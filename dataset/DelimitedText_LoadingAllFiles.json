@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "FileServerLocation",
-				"fileName": "*.csv"
+				"fileName": "Subcategories.csv"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
