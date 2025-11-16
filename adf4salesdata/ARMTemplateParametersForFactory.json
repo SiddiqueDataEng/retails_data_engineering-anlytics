@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf4salesdata"
+		},
+		"AzureDataLakeStorage_sink_accountKey": {
+			"value": ""
+		},
+		"fs_localdatafolders_password": {
+			"value": ""
+		},
+		"AzureDataLakeStorage_sink_properties_typeProperties_url": {
+			"value": "https://adls4salesdata.dfs.core.windows.net/"
+		},
+		"fs_localdatafolders_properties_typeProperties_host": {
+			"value": "C:\\Users\\DataEng\\Desktop\\DataTeam (SQL+Python)\\Project\\sourcedata"
+		},
+		"fs_localdatafolders_properties_typeProperties_userId": {
+			"value": "DataEng"
+		}
+	}
+}
