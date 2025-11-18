@@ -34,7 +34,7 @@
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
 							"quoteAllText": true,
-							"fileExtension": ".txt"
+							"fileExtension": ".csv"
 						}
 					},
 					"enableStaging": false,
@@ -99,7 +99,7 @@
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
 							"quoteAllText": true,
-							"fileExtension": ".txt"
+							"fileExtension": ".csv"
 						}
 					},
 					"enableStaging": false,
@@ -164,7 +164,7 @@
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
 							"quoteAllText": true,
-							"fileExtension": ".txt"
+							"fileExtension": ".csv"
 						}
 					},
 					"enableStaging": false,
@@ -197,7 +197,7 @@
 					{
 						"activity": "CopyData_Products",
 						"dependencyConditions": [
-							"Failed"
+							"Succeeded"
 						]
 					}
 				],
@@ -229,7 +229,7 @@
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
 							"quoteAllText": true,
-							"fileExtension": ".txt"
+							"fileExtension": ".csv"
 						}
 					},
 					"enableStaging": false,
@@ -294,7 +294,7 @@
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
 							"quoteAllText": true,
-							"fileExtension": ".txt"
+							"fileExtension": ".csv"
 						}
 					},
 					"enableStaging": false,
@@ -359,7 +359,7 @@
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
 							"quoteAllText": true,
-							"fileExtension": ".txt"
+							"fileExtension": ".csv"
 						}
 					},
 					"enableStaging": false,
