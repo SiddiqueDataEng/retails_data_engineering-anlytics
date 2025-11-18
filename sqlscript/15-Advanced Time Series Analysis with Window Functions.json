@@ -1,0 +1,17 @@
+{
+	"name": "15-Advanced Time Series Analysis with Window Functions",
+	"properties": {
+		"content": {
+			"query": "-- 15. Monthly Sales Growth with LAG (Month-over-Month)\nWITH MonthlySales AS (\n    SELECT \n        YEAR(TransactionDate) AS SalesYear,\n        MONTH(TransactionDate) AS SalesMonth,\n        SUM(Quantity * UnitPrice - ISNULL(Discount, 0)) AS MonthlyRevenue,\n        COUNT(*) AS TransactionCount\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    GROUP BY YEAR(TransactionDate), MONTH(TransactionDate)\n)\nSELECT \n    SalesYear,\n    SalesMonth,\n    MonthlyRevenue,\n    LAG(MonthlyRevenue) OVER (ORDER BY SalesYear, SalesMonth) AS PreviousMonthRevenue,\n    MonthlyRevenue - LAG(MonthlyRevenue) OVER (ORDER BY SalesYear, SalesMonth) AS RevenueGrowth,\n    CASE \n        WHEN LAG(MonthlyRevenue) OVER (ORDER BY SalesYear, SalesMonth) > 0 \n        THEN ((MonthlyRevenue - LAG(MonthlyRevenue) OVER (ORDER BY SalesYear, SalesMonth)) / LAG(MonthlyRevenue) OVER (ORDER BY SalesYear, SalesMonth)) * 100 \n        ELSE NULL \n    END AS GrowthPercentage\nFROM MonthlySales\nORDER BY SalesYear, SalesMonth;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

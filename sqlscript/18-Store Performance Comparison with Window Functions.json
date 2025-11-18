@@ -1,0 +1,17 @@
+{
+	"name": "18-Store Performance Comparison with Window Functions",
+	"properties": {
+		"content": {
+			"query": "-- 18. Store Performance Benchmarks and Ranking\nWITH StoreMonthlyPerformance AS (\n    SELECT \n        st.StoreID,\n        st.StoreName,\n        st.Region,\n        st.StoreType,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        COUNT(*) AS TransactionCount,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n        AVG(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS AvgTransactionValue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS st\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON st.StoreID = s.StoreID\n    GROUP BY st.StoreID, st.StoreName, st.Region, st.StoreType, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nStoreRankings AS (\n    SELECT \n        *,\n        RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue DESC) AS RevenueRank,\n        RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY AvgTransactionValue DESC) AS AvgValueRank,\n        PERCENT_RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue) AS RevenuePercentile,\n        LAG(MonthlyRevenue, 1) OVER (PARTITION BY StoreID ORDER BY SalesYear, SalesMonth) AS PreviousMonthRevenue\n    FROM StoreMonthlyPerformance\n)\nSELECT \n    *,\n    CASE \n        WHEN PreviousMonthRevenue > 0 \n        THEN ((MonthlyRevenue - PreviousMonthRevenue) / PreviousMonthRevenue) * 100 \n        ELSE NULL \n    END AS RevenueGrowthPercentage,\n    CASE \n        WHEN RevenueRank < LAG(RevenueRank, 1) OVER (PARTITION BY StoreID ORDER BY SalesYear, SalesMonth) \n        THEN 'Improved'\n        WHEN RevenueRank > LAG(RevenueRank, 1) OVER (PARTITION BY StoreID ORDER BY SalesYear, SalesMonth) \n        THEN 'Declined'\n        ELSE 'Same'\n    END AS RankTrend\nFROM StoreRankings\nORDER BY StoreID, SalesYear, SalesMonth;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

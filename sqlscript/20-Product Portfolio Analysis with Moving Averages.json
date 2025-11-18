@@ -1,0 +1,17 @@
+{
+	"name": "20-Product Portfolio Analysis with Moving Averages",
+	"properties": {
+		"content": {
+			"query": "-- 20. Product Sales Trends with Moving Averages\nWITH ProductDailySales AS (\n    SELECT \n        p.ProductID,\n        p.ProductName,\n        p.Brand,\n        CAST(s.TransactionDate AS DATE) AS SalesDate,\n        SUM(s.Quantity) AS DailyQuantity,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS DailyRevenue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON p.ProductID = s.ProductID\n    GROUP BY p.ProductID, p.ProductName, p.Brand, CAST(s.TransactionDate AS DATE)\n),\nProductMovingAverages AS (\n    SELECT \n        ProductID,\n        ProductName,\n        Brand,\n        SalesDate,\n        DailyQuantity,\n        DailyRevenue,\n        AVG(DailyRevenue) OVER (\n            PARTITION BY ProductID \n            ORDER BY SalesDate \n            ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n        ) AS WeeklyMovingAvgRevenue,\n        AVG(DailyQuantity) OVER (\n            PARTITION BY ProductID \n            ORDER BY SalesDate \n            ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n        ) AS WeeklyMovingAvgQuantity,\n        LAG(DailyRevenue, 7) OVER (PARTITION BY ProductID ORDER BY SalesDate) AS RevenueWeekAgo,\n        LEAD(DailyRevenue, 7) OVER (PARTITION BY ProductID ORDER BY SalesDate) AS RevenueWeekAhead\n    FROM ProductDailySales\n)\nSELECT \n    *,\n    CASE \n        WHEN RevenueWeekAgo > 0 \n        THEN ((DailyRevenue - RevenueWeekAgo) / RevenueWeekAgo) * 100 \n        ELSE NULL \n    END AS WeekOverWeekGrowth,\n    CASE \n        WHEN WeeklyMovingAvgRevenue > 0 \n        THEN ((DailyRevenue - WeeklyMovingAvgRevenue) / WeeklyMovingAvgRevenue) * 100 \n        ELSE NULL \n    END AS DeviationFromMovingAvg\nFROM ProductMovingAverages\nORDER BY ProductID, SalesDate;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

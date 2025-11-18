@@ -1,0 +1,17 @@
+{
+	"name": "16-Customer Behavior Analysis with Window Functions",
+	"properties": {
+		"content": {
+			"query": "-- 16. Customer Purchase Frequency and Recency (RFM-like Analysis)\nWITH CustomerPurchasePatterns AS (\n    SELECT \n        CustomerID,\n        TransactionDate,\n        Quantity * UnitPrice - ISNULL(Discount, 0) AS TransactionAmount,\n        LAG(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate) AS PreviousPurchaseDate,\n        LEAD(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate) AS NextPurchaseDate\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n),\nCustomerMetrics AS (\n    SELECT \n        CustomerID,\n        DATEDIFF(DAY, MIN(TransactionDate), MAX(TransactionDate)) AS CustomerLifetime,\n        COUNT(*) AS TotalPurchases,\n        AVG(TransactionAmount) AS AvgPurchaseValue,\n        AVG(DATEDIFF(DAY, PreviousPurchaseDate, TransactionDate)) AS AvgDaysBetweenPurchases\n    FROM CustomerPurchasePatterns\n    GROUP BY CustomerID\n)\nSELECT \n    cm.*,\n    c.FirstName,\n    c.LastName,\n    c.City,\n    c.State,\n    NTILE(5) OVER (ORDER BY TotalPurchases DESC) AS FrequencyScore,\n    NTILE(5) OVER (ORDER BY AvgPurchaseValue DESC) AS MonetaryScore,\n    NTILE(5) OVER (ORDER BY CustomerLifetime DESC) AS TenureScore\nFROM CustomerMetrics cm\nJOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS c ON cm.CustomerID = c.CustomerID\nWHERE cm.AvgDaysBetweenPurchases IS NOT NULL;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

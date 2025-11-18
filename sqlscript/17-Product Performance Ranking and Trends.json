@@ -1,0 +1,17 @@
+{
+	"name": "17-Product Performance Ranking and Trends",
+	"properties": {
+		"content": {
+			"query": "-- 17. Product Sales Ranking and Performance Trends\nWITH ProductMonthlySales AS (\n    SELECT \n        p.ProductID,\n        p.ProductName,\n        p.Brand,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        SUM(s.Quantity) AS MonthlyQuantity,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n        RANK() OVER (PARTITION BY YEAR(s.TransactionDate), MONTH(s.TransactionDate) \n                    ORDER BY SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) DESC) AS MonthlyRank\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON p.ProductID = s.ProductID\n    GROUP BY p.ProductID, p.ProductName, p.Brand, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nProductPerformance AS (\n    SELECT \n        ProductID,\n        ProductName,\n        Brand,\n        SalesYear,\n        SalesMonth,\n        MonthlyQuantity,\n        MonthlyRevenue,\n        MonthlyRank,\n        LAG(MonthlyRank, 1) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth) AS PreviousMonthRank,\n        LAG(MonthlyRevenue, 1) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth) AS PreviousMonthRevenue\n    FROM ProductMonthlySales\n)\nSELECT \n    *,\n    MonthlyRank - PreviousMonthRank AS RankChange,\n    CASE \n        WHEN PreviousMonthRevenue > 0 \n        THEN ((MonthlyRevenue - PreviousMonthRevenue) / PreviousMonthRevenue) * 100 \n        ELSE NULL \n    END AS RevenueGrowthPercentage\nFROM ProductPerformance\nORDER BY ProductID, SalesYear, SalesMonth;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

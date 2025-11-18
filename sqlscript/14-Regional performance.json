@@ -1,8 +1,8 @@
 {
-	"name": "13-Regional performance",
+	"name": "14-Regional performance",
 	"properties": {
 		"content": {
-			"query": "-- 13. Regional performance\nSELECT \n    st.Region,\n    st.State,\n    COUNT(*) AS TransactionCount,\n    SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS TotalRevenue,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nJOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS st ON s.StoreID = st.StoreID\nGROUP BY st.Region, st.State\nORDER BY TotalRevenue DESC;",
+			"query": "-- 14. Regional performance\nSELECT \n    st.Region,\n    st.State,\n    COUNT(*) AS TransactionCount,\n    SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS TotalRevenue,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nJOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS st ON s.StoreID = st.StoreID\nGROUP BY st.Region, st.State\nORDER BY TotalRevenue DESC;",
 			"metadata": {
 				"language": "sql"
 			},

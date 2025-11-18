@@ -1,0 +1,17 @@
+{
+	"name": "21-Customer Churn Prediction Analysis",
+	"properties": {
+		"content": {
+			"query": "-- 21. Customer Churn Probability and Purchase Gaps\nWITH CustomerPurchaseGaps AS (\n    SELECT \n        CustomerID,\n        TransactionDate,\n        LAG(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate) AS PreviousPurchaseDate,\n        LEAD(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate) AS NextPurchaseDate,\n        DATEDIFF(DAY, \n                LAG(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate), \n                TransactionDate\n        ) AS DaysSinceLastPurchase,\n        DATEDIFF(DAY, \n                TransactionDate,\n                LEAD(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate)\n        ) AS DaysUntilNextPurchase\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n),\nCustomerPurchasePatterns AS (\n    SELECT \n        CustomerID,\n        AVG(DaysSinceLastPurchase) AS AvgPurchaseGap,\n        MAX(DaysSinceLastPurchase) AS MaxPurchaseGap,\n        COUNT(*) AS TotalPurchases,\n        DATEDIFF(DAY, MIN(TransactionDate), MAX(TransactionDate)) AS CustomerActivePeriod\n    FROM CustomerPurchaseGaps\n    WHERE DaysSinceLastPurchase IS NOT NULL\n    GROUP BY CustomerID\n),\nCustomerChurnRisk AS (\n    SELECT \n        cpg.CustomerID,\n        c.FirstName,\n        c.LastName,\n        c.City,\n        c.State,\n        cpp.AvgPurchaseGap,\n        cpp.MaxPurchaseGap,\n        cpp.TotalPurchases,\n        cpp.CustomerActivePeriod,\n        DATEDIFF(DAY, MAX(cpg.TransactionDate), CAST(GETDATE() AS DATE)) AS DaysSinceLastPurchase,\n        CASE \n            WHEN DATEDIFF(DAY, MAX(cpg.TransactionDate), CAST(GETDATE() AS DATE)) > cpp.AvgPurchaseGap * 2 \n            THEN 'High Churn Risk'\n            WHEN DATEDIFF(DAY, MAX(cpg.TransactionDate), CAST(GETDATE() AS DATE)) > cpp.AvgPurchaseGap * 1.5 \n            THEN 'Medium Churn Risk'\n            ELSE 'Low Churn Risk'\n        END AS ChurnRiskCategory,\n        PERCENT_RANK() OVER (ORDER BY DATEDIFF(DAY, MAX(cpg.TransactionDate), CAST(GETDATE() AS DATE)) DESC) AS ChurnProbability\n    FROM CustomerPurchaseGaps cpg\n    JOIN CustomerPurchasePatterns cpp ON cpg.CustomerID = cpp.CustomerID\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c ON cpg.CustomerID = c.CustomerID\n    GROUP BY cpg.CustomerID, c.FirstName, c.LastName, c.City, c.State, \n             cpp.AvgPurchaseGap, cpp.MaxPurchaseGap, cpp.TotalPurchases, cpp.CustomerActivePeriod\n)\nSELECT *\nFROM CustomerChurnRisk\nORDER BY ChurnProbability DESC, DaysSinceLastPurchase DESC;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

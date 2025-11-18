@@ -1,0 +1,17 @@
+{
+	"name": "22-Regional Market Share Analysis",
+	"properties": {
+		"content": {
+			"query": "-- 22. Regional Market Share and Growth Analysis\nWITH RegionalMonthlySales AS (\n    SELECT \n        st.Region,\n        st.State,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS RegionalRevenue,\n        SUM(SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0))) OVER (\n            PARTITION BY YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n        ) AS TotalNationalRevenue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS st ON s.StoreID = st.StoreID\n    GROUP BY st.Region, st.State, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nRegionalMarketShare AS (\n    SELECT \n        Region,\n        State,\n        SalesYear,\n        SalesMonth,\n        RegionalRevenue,\n        TotalNationalRevenue,\n        (RegionalRevenue / TotalNationalRevenue) * 100 AS MarketSharePercentage,\n        LAG(RegionalRevenue, 1) OVER (PARTITION BY Region, State ORDER BY SalesYear, SalesMonth) AS PreviousMonthRevenue,\n        LAG((RegionalRevenue / TotalNationalRevenue) * 100, 1) OVER (PARTITION BY Region, State ORDER BY SalesYear, SalesMonth) AS PreviousMonthMarketShare\n    FROM RegionalMonthlySales\n)\nSELECT \n    *,\n    RegionalRevenue - PreviousMonthRevenue AS RevenueGrowth,\n    MarketSharePercentage - PreviousMonthMarketShare AS MarketShareChange,\n    RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MarketSharePercentage DESC) AS MarketShareRank,\n    PERCENT_RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY RegionalRevenue) AS RevenuePercentile\nFROM RegionalMarketShare\nORDER BY SalesYear, SalesMonth, MarketShareRank;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

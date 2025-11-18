@@ -1,0 +1,18 @@
+{
+	"name": "19-Customer Lifetime Value CLV with Advanced Window Functions",
+	"properties": {
+		"description": "Customer Lifetime Value (CLV) with Advanced Window Functions",
+		"content": {
+			"query": "-- 19. Advanced Customer Lifetime Value Analysis\nWITH CustomerTransactionSequence AS (\n    SELECT \n        CustomerID,\n        TransactionDate,\n        Quantity * UnitPrice - ISNULL(Discount, 0) AS TransactionAmount,\n        ROW_NUMBER() OVER (PARTITION BY CustomerID ORDER BY TransactionDate) AS TransactionSequence,\n        FIRST_VALUE(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate) AS FirstPurchaseDate,\n        LAST_VALUE(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS LastPurchaseDate\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n),\nCustomerCohorts AS (\n    SELECT \n        CustomerID,\n        MIN(TransactionDate) AS CohortDate,\n        DATEFROMPARTS(YEAR(MIN(TransactionDate)), MONTH(MIN(TransactionDate)), 1) AS CohortMonth\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    GROUP BY CustomerID\n),\nCustomerLTV AS (\n    SELECT \n        c.CustomerID,\n        cc.CohortMonth,\n        DATEDIFF(MONTH, cc.CohortMonth, CAST(GETDATE() AS DATE)) AS MonthsSinceFirstPurchase,\n        COUNT(cts.TransactionDate) AS TotalTransactions,\n        SUM(cts.TransactionAmount) AS TotalLifetimeValue,\n        AVG(cts.TransactionAmount) AS AvgTransactionValue,\n        MAX(cts.TransactionSequence) AS MaxTransactionSequence\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c\n    JOIN CustomerCohorts cc ON c.CustomerID = cc.CustomerID\n    JOIN CustomerTransactionSequence cts ON c.CustomerID = cts.CustomerID\n    GROUP BY c.CustomerID, cc.CohortMonth\n)\nSELECT \n    clv.*,\n    c.FirstName,\n    c.LastName,\n    c.City,\n    c.State,\n    PERCENT_RANK() OVER (ORDER BY TotalLifetimeValue) AS LTVPercentile,\n    NTILE(10) OVER (ORDER BY TotalLifetimeValue DESC) AS LTVDecile,\n    CASE \n        WHEN TotalLifetimeValue > 1000 THEN 'Platinum'\n        WHEN TotalLifetimeValue > 500 THEN 'Gold'\n        WHEN TotalLifetimeValue > 200 THEN 'Silver'\n        ELSE 'Bronze'\n    END AS LTVSegment,\n    LAG(TotalLifetimeValue, 1) OVER (PARTITION BY CustomerID ORDER BY CohortMonth) AS PreviousLTV\nFROM CustomerLTV clv\nJOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS c ON clv.CustomerID = c.CustomerID\nORDER BY TotalLifetimeValue DESC;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
