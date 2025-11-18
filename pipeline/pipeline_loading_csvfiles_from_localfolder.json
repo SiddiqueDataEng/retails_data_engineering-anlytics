@@ -384,6 +384,62 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "Succeeded",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "CopyData_Subcategories",
+						"dependencyConditions": [
+							"Skipped"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-94.eastus.logic.azure.com:443/workflows/ad354d5e043d427aa25b11815f5003cb/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=kBjgUsLhyX38_ErQKzXbkVY7kBOy_aE9aE6xWvwZJAs",
+					"body": {
+						"value": "\"pipelineName\": \"@{pipeline().Pipeline}\",\n\"status\": \"Succeeded\",\n\"runId\": \"@{pipeline().RunId}\",\n\"time\": \"@{utcNow()}\",",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Failed",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "CopyData_Subcategories",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-94.eastus.logic.azure.com:443/workflows/ad354d5e043d427aa25b11815f5003cb/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=kBjgUsLhyX38_ErQKzXbkVY7kBOy_aE9aE6xWvwZJAs",
+					"body": {
+						"value": "\"pipelineName\": \"@{pipeline().Pipeline}\",\n\"status\": \"Succeeded\",\n\"runId\": \"@{pipeline().RunId}\",\n\"time\": \"@{utcNow()}\",",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"annotations": []
