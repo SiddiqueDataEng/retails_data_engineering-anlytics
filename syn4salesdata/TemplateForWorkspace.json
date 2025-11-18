@@ -114,6 +114,106 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/10-Monthly trends')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 10. Monthly trends \nSELECT \n    SalesYear,\n    SalesMonth,\n    MonthlyRevenue,\n    TransactionCount,\n    TotalQuantity\nFROM dbo.vw_monthly_sales_trend\nORDER BY SalesYear, SalesMonth;\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/11-Store performance comparison')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 11. Store performance comparison\nSELECT *\nFROM dbo.vw_store_performance\nORDER BY TotalRevenue DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/12-Payment method analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 12. Payment method analysis\nSELECT \n    PaymentMethod,\n    COUNT(*) AS TransactionCount,\n    SUM(Quantity * UnitPrice - ISNULL(Discount, 0)) AS TotalAmount,\n    AVG(Quantity * UnitPrice - ISNULL(Discount, 0)) AS AvgTransactionValue\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nGROUP BY PaymentMethod\nORDER BY TotalAmount DESC;\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/13-Daily sales performance')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 13. Daily sales performance\nSELECT \n    CAST(TransactionDate AS DATE) AS SalesDate,\n    COUNT(*) AS DailyTransactions,\n    SUM(Quantity * UnitPrice - ISNULL(Discount, 0)) AS DailyRevenue,\n    AVG(Quantity * UnitPrice - ISNULL(Discount, 0)) AS AvgDailyTransaction\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nGROUP BY CAST(TransactionDate AS DATE)\nORDER BY SalesDate DESC;\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/14-Regional performance')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 14. Regional performance\nSELECT \n    st.Region,\n    st.State,\n    COUNT(*) AS TransactionCount,\n    SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS TotalRevenue,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nJOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS st ON s.StoreID = st.StoreID\nGROUP BY st.Region, st.State\nORDER BY TotalRevenue DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/2-Enhanced Sales Data View with Calculations')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -234,26 +334,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/13-Daily sales performance')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "-- 13. Daily sales performance\nSELECT \n    CAST(TransactionDate AS DATE) AS SalesDate,\n    COUNT(*) AS DailyTransactions,\n    SUM(Quantity * UnitPrice - ISNULL(Discount, 0)) AS DailyRevenue,\n    AVG(Quantity * UnitPrice - ISNULL(Discount, 0)) AS AvgDailyTransaction\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nGROUP BY CAST(TransactionDate AS DATE)\nORDER BY SalesDate DESC;\n\n",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "salesdata",
-						"poolName": "Built-in"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/8-Top performing products')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -294,17 +374,17 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/10-Monthly trends')]",
+			"name": "[concat(parameters('workspaceName'), '/15-Advanced Time Series Analysis with Window Functions')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "-- 10. Monthly trends \nSELECT \n    SalesYear,\n    SalesMonth,\n    MonthlyRevenue,\n    TransactionCount,\n    TotalQuantity\nFROM dbo.vw_monthly_sales_trend\nORDER BY SalesYear, SalesMonth;\n\n",
+					"query": "-- 15. Monthly Sales Growth with LAG (Month-over-Month)\nWITH MonthlySales AS (\n    SELECT \n        YEAR(TransactionDate) AS SalesYear,\n        MONTH(TransactionDate) AS SalesMonth,\n        SUM(Quantity * UnitPrice - ISNULL(Discount, 0)) AS MonthlyRevenue,\n        COUNT(*) AS TransactionCount\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    GROUP BY YEAR(TransactionDate), MONTH(TransactionDate)\n)\nSELECT \n    SalesYear,\n    SalesMonth,\n    MonthlyRevenue,\n    LAG(MonthlyRevenue) OVER (ORDER BY SalesYear, SalesMonth) AS PreviousMonthRevenue,\n    MonthlyRevenue - LAG(MonthlyRevenue) OVER (ORDER BY SalesYear, SalesMonth) AS RevenueGrowth,\n    CASE \n        WHEN LAG(MonthlyRevenue) OVER (ORDER BY SalesYear, SalesMonth) > 0 \n        THEN ((MonthlyRevenue - LAG(MonthlyRevenue) OVER (ORDER BY SalesYear, SalesMonth)) / LAG(MonthlyRevenue) OVER (ORDER BY SalesYear, SalesMonth)) * 100 \n        ELSE NULL \n    END AS GrowthPercentage\nFROM MonthlySales\nORDER BY SalesYear, SalesMonth;",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "salesdata",
+						"databaseName": "master",
 						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
@@ -314,17 +394,17 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/11-Store performance comparison')]",
+			"name": "[concat(parameters('workspaceName'), '/16-Customer Behavior Analysis with Window Functions')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "-- 11. Store performance comparison\nSELECT *\nFROM dbo.vw_store_performance\nORDER BY TotalRevenue DESC;",
+					"query": "-- 16. Customer Purchase Frequency and Recency (RFM-like Analysis)\nWITH CustomerPurchasePatterns AS (\n    SELECT \n        CustomerID,\n        TransactionDate,\n        Quantity * UnitPrice - ISNULL(Discount, 0) AS TransactionAmount,\n        LAG(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate) AS PreviousPurchaseDate,\n        LEAD(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate) AS NextPurchaseDate\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n),\nCustomerMetrics AS (\n    SELECT \n        CustomerID,\n        DATEDIFF(DAY, MIN(TransactionDate), MAX(TransactionDate)) AS CustomerLifetime,\n        COUNT(*) AS TotalPurchases,\n        AVG(TransactionAmount) AS AvgPurchaseValue,\n        AVG(DATEDIFF(DAY, PreviousPurchaseDate, TransactionDate)) AS AvgDaysBetweenPurchases\n    FROM CustomerPurchasePatterns\n    GROUP BY CustomerID\n)\nSELECT \n    cm.*,\n    c.FirstName,\n    c.LastName,\n    c.City,\n    c.State,\n    NTILE(5) OVER (ORDER BY TotalPurchases DESC) AS FrequencyScore,\n    NTILE(5) OVER (ORDER BY AvgPurchaseValue DESC) AS MonetaryScore,\n    NTILE(5) OVER (ORDER BY CustomerLifetime DESC) AS TenureScore\nFROM CustomerMetrics cm\nJOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS c ON cm.CustomerID = c.CustomerID\nWHERE cm.AvgDaysBetweenPurchases IS NOT NULL;",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "salesdata",
+						"databaseName": "master",
 						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
@@ -334,17 +414,17 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/12-Payment method analysis')]",
+			"name": "[concat(parameters('workspaceName'), '/17-Product Performance Ranking and Trends')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "-- 12. Payment method analysis\nSELECT \n    PaymentMethod,\n    COUNT(*) AS TransactionCount,\n    SUM(Quantity * UnitPrice - ISNULL(Discount, 0)) AS TotalAmount,\n    AVG(Quantity * UnitPrice - ISNULL(Discount, 0)) AS AvgTransactionValue\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nGROUP BY PaymentMethod\nORDER BY TotalAmount DESC;\n\n",
+					"query": "-- 17. Product Sales Ranking and Performance Trends\nWITH ProductMonthlySales AS (\n    SELECT \n        p.ProductID,\n        p.ProductName,\n        p.Brand,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        SUM(s.Quantity) AS MonthlyQuantity,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n        RANK() OVER (PARTITION BY YEAR(s.TransactionDate), MONTH(s.TransactionDate) \n                    ORDER BY SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) DESC) AS MonthlyRank\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON p.ProductID = s.ProductID\n    GROUP BY p.ProductID, p.ProductName, p.Brand, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nProductPerformance AS (\n    SELECT \n        ProductID,\n        ProductName,\n        Brand,\n        SalesYear,\n        SalesMonth,\n        MonthlyQuantity,\n        MonthlyRevenue,\n        MonthlyRank,\n        LAG(MonthlyRank, 1) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth) AS PreviousMonthRank,\n        LAG(MonthlyRevenue, 1) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth) AS PreviousMonthRevenue\n    FROM ProductMonthlySales\n)\nSELECT \n    *,\n    MonthlyRank - PreviousMonthRank AS RankChange,\n    CASE \n        WHEN PreviousMonthRevenue > 0 \n        THEN ((MonthlyRevenue - PreviousMonthRevenue) / PreviousMonthRevenue) * 100 \n        ELSE NULL \n    END AS RevenueGrowthPercentage\nFROM ProductPerformance\nORDER BY ProductID, SalesYear, SalesMonth;",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "salesdata",
+						"databaseName": "master",
 						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
@@ -354,17 +434,318 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/13-Regional performance')]",
+			"name": "[concat(parameters('workspaceName'), '/18-Store Performance Comparison with Window Functions')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "-- 13. Regional performance\nSELECT \n    st.Region,\n    st.State,\n    COUNT(*) AS TransactionCount,\n    SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS TotalRevenue,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nJOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS st ON s.StoreID = st.StoreID\nGROUP BY st.Region, st.State\nORDER BY TotalRevenue DESC;",
+					"query": "-- 18. Store Performance Benchmarks and Ranking\nWITH StoreMonthlyPerformance AS (\n    SELECT \n        st.StoreID,\n        st.StoreName,\n        st.Region,\n        st.StoreType,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        COUNT(*) AS TransactionCount,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n        AVG(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS AvgTransactionValue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS st\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON st.StoreID = s.StoreID\n    GROUP BY st.StoreID, st.StoreName, st.Region, st.StoreType, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nStoreRankings AS (\n    SELECT \n        *,\n        RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue DESC) AS RevenueRank,\n        RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY AvgTransactionValue DESC) AS AvgValueRank,\n        PERCENT_RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue) AS RevenuePercentile,\n        LAG(MonthlyRevenue, 1) OVER (PARTITION BY StoreID ORDER BY SalesYear, SalesMonth) AS PreviousMonthRevenue\n    FROM StoreMonthlyPerformance\n)\nSELECT \n    *,\n    CASE \n        WHEN PreviousMonthRevenue > 0 \n        THEN ((MonthlyRevenue - PreviousMonthRevenue) / PreviousMonthRevenue) * 100 \n        ELSE NULL \n    END AS RevenueGrowthPercentage,\n    CASE \n        WHEN RevenueRank < LAG(RevenueRank, 1) OVER (PARTITION BY StoreID ORDER BY SalesYear, SalesMonth) \n        THEN 'Improved'\n        WHEN RevenueRank > LAG(RevenueRank, 1) OVER (PARTITION BY StoreID ORDER BY SalesYear, SalesMonth) \n        THEN 'Declined'\n        ELSE 'Same'\n    END AS RankTrend\nFROM StoreRankings\nORDER BY StoreID, SalesYear, SalesMonth;",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "salesdata",
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/19-Customer Lifetime Value CLV with Advanced Window Functions')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Customer Lifetime Value (CLV) with Advanced Window Functions",
+				"content": {
+					"query": "-- 19. Advanced Customer Lifetime Value Analysis (CORRECTED)\nWITH CustomerTransactionSequence AS (\n    SELECT \n        s.CustomerID,\n        s.TransactionDate,\n        s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0) AS TransactionAmount,\n        ROW_NUMBER() OVER (PARTITION BY s.CustomerID ORDER BY s.TransactionDate) AS TransactionSequence,\n        FIRST_VALUE(s.TransactionDate) OVER (PARTITION BY s.CustomerID ORDER BY s.TransactionDate) AS FirstPurchaseDate,\n        LAST_VALUE(s.TransactionDate) OVER (PARTITION BY s.CustomerID ORDER BY s.TransactionDate ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS LastPurchaseDate\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n),\nCustomerCohorts AS (\n    SELECT \n        s.CustomerID,\n        MIN(s.TransactionDate) AS CohortDate,\n        DATEFROMPARTS(YEAR(MIN(s.TransactionDate)), MONTH(MIN(s.TransactionDate)), 1) AS CohortMonth\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    GROUP BY s.CustomerID\n),\nCustomerLTV AS (\n    SELECT \n        c.CustomerID,\n        cc.CohortMonth,\n        DATEDIFF(MONTH, cc.CohortMonth, CAST(GETDATE() AS DATE)) AS MonthsSinceFirstPurchase,\n        COUNT(cts.TransactionDate) AS TotalTransactions,\n        SUM(cts.TransactionAmount) AS TotalLifetimeValue,\n        AVG(cts.TransactionAmount) AS AvgTransactionValue,\n        MAX(cts.TransactionSequence) AS MaxTransactionSequence\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c\n    JOIN CustomerCohorts cc ON c.CustomerID = cc.CustomerID\n    JOIN CustomerTransactionSequence cts ON c.CustomerID = cts.CustomerID\n    GROUP BY c.CustomerID, cc.CohortMonth\n)\nSELECT \n    clv.*,\n    cust.FirstName,\n    cust.LastName,\n    cust.City,\n    cust.State,\n    PERCENT_RANK() OVER (ORDER BY TotalLifetimeValue) AS LTVPercentile,\n    NTILE(10) OVER (ORDER BY TotalLifetimeValue DESC) AS LTVDecile,\n    CASE \n        WHEN TotalLifetimeValue > 1000 THEN 'Platinum'\n        WHEN TotalLifetimeValue > 500 THEN 'Gold'\n        WHEN TotalLifetimeValue > 200 THEN 'Silver'\n        ELSE 'Bronze'\n    END AS LTVSegment,\n    LAG(TotalLifetimeValue, 1) OVER (PARTITION BY clv.CustomerID ORDER BY clv.CohortMonth) AS PreviousLTV\nFROM CustomerLTV clv\nJOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS cust ON clv.CustomerID = cust.CustomerID\nORDER BY TotalLifetimeValue DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/20-Product Portfolio Analysis with Moving Averages')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 20. Product Sales Trends with Moving Averages\nWITH ProductDailySales AS (\n    SELECT \n        p.ProductID,\n        p.ProductName,\n        p.Brand,\n        CAST(s.TransactionDate AS DATE) AS SalesDate,\n        SUM(s.Quantity) AS DailyQuantity,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS DailyRevenue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON p.ProductID = s.ProductID\n    GROUP BY p.ProductID, p.ProductName, p.Brand, CAST(s.TransactionDate AS DATE)\n),\nProductMovingAverages AS (\n    SELECT \n        ProductID,\n        ProductName,\n        Brand,\n        SalesDate,\n        DailyQuantity,\n        DailyRevenue,\n        AVG(DailyRevenue) OVER (\n            PARTITION BY ProductID \n            ORDER BY SalesDate \n            ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n        ) AS WeeklyMovingAvgRevenue,\n        AVG(DailyQuantity) OVER (\n            PARTITION BY ProductID \n            ORDER BY SalesDate \n            ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n        ) AS WeeklyMovingAvgQuantity,\n        LAG(DailyRevenue, 7) OVER (PARTITION BY ProductID ORDER BY SalesDate) AS RevenueWeekAgo,\n        LEAD(DailyRevenue, 7) OVER (PARTITION BY ProductID ORDER BY SalesDate) AS RevenueWeekAhead\n    FROM ProductDailySales\n)\nSELECT \n    *,\n    CASE \n        WHEN RevenueWeekAgo > 0 \n        THEN ((DailyRevenue - RevenueWeekAgo) / RevenueWeekAgo) * 100 \n        ELSE NULL \n    END AS WeekOverWeekGrowth,\n    CASE \n        WHEN WeeklyMovingAvgRevenue > 0 \n        THEN ((DailyRevenue - WeeklyMovingAvgRevenue) / WeeklyMovingAvgRevenue) * 100 \n        ELSE NULL \n    END AS DeviationFromMovingAvg\nFROM ProductMovingAverages\nORDER BY ProductID, SalesDate;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/21-Customer Churn Prediction Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 21. Customer Churn Probability and Purchase Gaps\nWITH CustomerPurchaseGaps AS (\n    SELECT \n        CustomerID,\n        TransactionDate,\n        LAG(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate) AS PreviousPurchaseDate,\n        LEAD(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate) AS NextPurchaseDate,\n        DATEDIFF(DAY, \n                LAG(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate), \n                TransactionDate\n        ) AS DaysSinceLastPurchase,\n        DATEDIFF(DAY, \n                TransactionDate,\n                LEAD(TransactionDate) OVER (PARTITION BY CustomerID ORDER BY TransactionDate)\n        ) AS DaysUntilNextPurchase\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n),\nCustomerPurchasePatterns AS (\n    SELECT \n        CustomerID,\n        AVG(DaysSinceLastPurchase) AS AvgPurchaseGap,\n        MAX(DaysSinceLastPurchase) AS MaxPurchaseGap,\n        COUNT(*) AS TotalPurchases,\n        DATEDIFF(DAY, MIN(TransactionDate), MAX(TransactionDate)) AS CustomerActivePeriod\n    FROM CustomerPurchaseGaps\n    WHERE DaysSinceLastPurchase IS NOT NULL\n    GROUP BY CustomerID\n),\nCustomerChurnRisk AS (\n    SELECT \n        cpg.CustomerID,\n        c.FirstName,\n        c.LastName,\n        c.City,\n        c.State,\n        cpp.AvgPurchaseGap,\n        cpp.MaxPurchaseGap,\n        cpp.TotalPurchases,\n        cpp.CustomerActivePeriod,\n        DATEDIFF(DAY, MAX(cpg.TransactionDate), CAST(GETDATE() AS DATE)) AS DaysSinceLastPurchase,\n        CASE \n            WHEN DATEDIFF(DAY, MAX(cpg.TransactionDate), CAST(GETDATE() AS DATE)) > cpp.AvgPurchaseGap * 2 \n            THEN 'High Churn Risk'\n            WHEN DATEDIFF(DAY, MAX(cpg.TransactionDate), CAST(GETDATE() AS DATE)) > cpp.AvgPurchaseGap * 1.5 \n            THEN 'Medium Churn Risk'\n            ELSE 'Low Churn Risk'\n        END AS ChurnRiskCategory,\n        PERCENT_RANK() OVER (ORDER BY DATEDIFF(DAY, MAX(cpg.TransactionDate), CAST(GETDATE() AS DATE)) DESC) AS ChurnProbability\n    FROM CustomerPurchaseGaps cpg\n    JOIN CustomerPurchasePatterns cpp ON cpg.CustomerID = cpp.CustomerID\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c ON cpg.CustomerID = c.CustomerID\n    GROUP BY cpg.CustomerID, c.FirstName, c.LastName, c.City, c.State, \n             cpp.AvgPurchaseGap, cpp.MaxPurchaseGap, cpp.TotalPurchases, cpp.CustomerActivePeriod\n)\nSELECT *\nFROM CustomerChurnRisk\nORDER BY ChurnProbability DESC, DaysSinceLastPurchase DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/22-Regional Market Share Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 22. Regional Market Share and Growth Analysis\nWITH RegionalMonthlySales AS (\n    SELECT \n        st.Region,\n        st.State,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS RegionalRevenue,\n        SUM(SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0))) OVER (\n            PARTITION BY YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n        ) AS TotalNationalRevenue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS st ON s.StoreID = st.StoreID\n    GROUP BY st.Region, st.State, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nRegionalMarketShare AS (\n    SELECT \n        Region,\n        State,\n        SalesYear,\n        SalesMonth,\n        RegionalRevenue,\n        TotalNationalRevenue,\n        (RegionalRevenue / TotalNationalRevenue) * 100 AS MarketSharePercentage,\n        LAG(RegionalRevenue, 1) OVER (PARTITION BY Region, State ORDER BY SalesYear, SalesMonth) AS PreviousMonthRevenue,\n        LAG((RegionalRevenue / TotalNationalRevenue) * 100, 1) OVER (PARTITION BY Region, State ORDER BY SalesYear, SalesMonth) AS PreviousMonthMarketShare\n    FROM RegionalMonthlySales\n)\nSELECT \n    *,\n    RegionalRevenue - PreviousMonthRevenue AS RevenueGrowth,\n    MarketSharePercentage - PreviousMonthMarketShare AS MarketShareChange,\n    RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MarketSharePercentage DESC) AS MarketShareRank,\n    PERCENT_RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY RegionalRevenue) AS RevenuePercentile\nFROM RegionalMarketShare\nORDER BY SalesYear, SalesMonth, MarketShareRank;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/23-Product Portfolio Performance with Running Totals')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 9. Product Performance with Running Totals and Cumulative Revenue\nWITH ProductSales AS (\n    SELECT \n        p.ProductID,\n        p.ProductName,\n        p.Brand,\n        CAST(s.TransactionDate AS DATE) AS SalesDate,\n        SUM(s.Quantity) AS DailyQuantity,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS DailyRevenue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON p.ProductID = s.ProductID\n    GROUP BY p.ProductID, p.ProductName, p.Brand, CAST(s.TransactionDate AS DATE)\n)\nSELECT \n    ProductID,\n    ProductName,\n    Brand,\n    SalesDate,\n    DailyQuantity,\n    DailyRevenue,\n    SUM(DailyRevenue) OVER (\n        PARTITION BY ProductID \n        ORDER BY SalesDate \n        ROWS UNBOUNDED PRECEDING\n    ) AS CumulativeRevenue,\n    AVG(DailyRevenue) OVER (\n        PARTITION BY ProductID \n        ORDER BY SalesDate \n        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n    ) AS WeeklyMovingAvg,\n    RANK() OVER (PARTITION BY SalesDate ORDER BY DailyRevenue DESC) AS DailyRank,\n    PERCENT_RANK() OVER (PARTITION BY SalesDate ORDER BY DailyRevenue) AS DailyPercentile\nFROM ProductSales\nORDER BY ProductID, SalesDate;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/24-Customer Purchase Frequency Analysis with Window Functions')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 24. Customer Purchase Frequency and Behavioral Patterns (CORRECTED)\nWITH CustomerPurchaseStats AS (\n    SELECT \n        s.CustomerID,\n        s.TransactionDate,\n        s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0) AS TransactionAmount,\n        LAG(s.TransactionDate) OVER (PARTITION BY s.CustomerID ORDER BY s.TransactionDate) AS PrevPurchaseDate,\n        LEAD(s.TransactionDate) OVER (PARTITION BY s.CustomerID ORDER BY s.TransactionDate) AS NextPurchaseDate\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n),\nCustomerBehavior AS (\n    SELECT \n        cps.CustomerID,\n        c.FirstName,\n        c.LastName,\n        c.State,\n        COUNT(*) AS TotalPurchases,\n        SUM(cps.TransactionAmount) AS TotalSpent,\n        AVG(cps.TransactionAmount) AS AvgPurchaseValue,\n        MIN(cps.TransactionDate) AS FirstPurchase,\n        MAX(cps.TransactionDate) AS LastPurchase,\n        AVG(DATEDIFF(DAY, cps.PrevPurchaseDate, cps.TransactionDate)) AS AvgDaysBetweenPurchases,\n        MAX(DATEDIFF(DAY, cps.PrevPurchaseDate, cps.TransactionDate)) AS MaxDaysBetweenPurchases\n    FROM CustomerPurchaseStats cps\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c ON cps.CustomerID = c.CustomerID\n    WHERE cps.PrevPurchaseDate IS NOT NULL\n    GROUP BY cps.CustomerID, c.FirstName, c.LastName, c.State\n),\nCustomerStatusAnalysis AS (\n    SELECT \n        *,\n        DATEDIFF(DAY, LastPurchase, CAST(GETDATE() AS DATE)) AS DaysSinceLastPurchase\n    FROM CustomerBehavior\n)\nSELECT \n    *,\n    CASE \n        WHEN DaysSinceLastPurchase > AvgDaysBetweenPurchases * 2 THEN 'At Risk'\n        WHEN DaysSinceLastPurchase > AvgDaysBetweenPurchases * 1.5 THEN 'Watch List'\n        ELSE 'Active'\n    END AS CustomerStatus,\n    NTILE(4) OVER (ORDER BY TotalSpent DESC) AS SpendingQuartile,\n    NTILE(4) OVER (ORDER BY TotalPurchases DESC) AS FrequencyQuartile,\n    RANK() OVER (ORDER BY TotalSpent DESC) AS SpendingRank\nFROM CustomerStatusAnalysis\nORDER BY TotalSpent DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/25-Store Performance with YoY Growth and Seasonal Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 11. Store Year-over-Year Growth and Seasonal Performance\nWITH StoreMonthlySales AS (\n    SELECT \n        st.StoreID,\n        st.StoreName,\n        st.Region,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n        COUNT(*) AS TransactionCount\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS st\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON st.StoreID = s.StoreID\n    GROUP BY st.StoreID, st.StoreName, st.Region, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nStoreYoY AS (\n    SELECT \n        StoreID,\n        StoreName,\n        Region,\n        SalesYear,\n        SalesMonth,\n        MonthlyRevenue,\n        TransactionCount,\n        LAG(MonthlyRevenue, 12) OVER (PARTITION BY StoreID ORDER BY SalesYear, SalesMonth) AS RevenueSameMonthLastYear,\n        LAG(TransactionCount, 12) OVER (PARTITION BY StoreID ORDER BY SalesYear, SalesMonth) AS TransactionsSameMonthLastYear\n    FROM StoreMonthlySales\n)\nSELECT \n    *,\n    CASE \n        WHEN RevenueSameMonthLastYear > 0 \n        THEN ((MonthlyRevenue - RevenueSameMonthLastYear) / RevenueSameMonthLastYear) * 100 \n        ELSE NULL \n    END AS YoYRevenueGrowth,\n    CASE \n        WHEN TransactionsSameMonthLastYear > 0 \n        THEN ((TransactionCount - TransactionsSameMonthLastYear) / TransactionsSameMonthLastYear) * 100 \n        ELSE NULL \n    END AS YoYTransactionGrowth,\n    RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue DESC) AS MonthlyRevenueRank,\n    PERCENT_RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue) AS MonthlyRevenuePercentile\nFROM StoreYoY\nWHERE RevenueSameMonthLastYear IS NOT NULL\nORDER BY StoreID, SalesYear, SalesMonth;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/26-Product Cross-Selling and Basket Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 12. Product Cross-Selling Analysis with Window Functions\nWITH TransactionProducts AS (\n    SELECT \n        s.TransactionID,\n        s.ProductID,\n        p.ProductName,\n        p.CategoryID\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p ON s.ProductID = p.ProductID\n),\nProductPairs AS (\n    SELECT \n        tp1.ProductID AS Product1,\n        tp1.ProductName AS Product1Name,\n        tp2.ProductID AS Product2,\n        tp2.ProductName AS Product2Name,\n        COUNT(*) AS CoOccurrenceCount\n    FROM TransactionProducts tp1\n    JOIN TransactionProducts tp2 ON tp1.TransactionID = tp2.TransactionID\n    WHERE tp1.ProductID < tp2.ProductID\n    GROUP BY tp1.ProductID, tp1.ProductName, tp2.ProductID, tp2.ProductName\n),\nProductPopularity AS (\n    SELECT \n        ProductID,\n        COUNT(DISTINCT TransactionID) AS TransactionCount\n    FROM TransactionProducts\n    GROUP BY ProductID\n)\nSELECT \n    pp.Product1,\n    pp.Product1Name,\n    pp.Product2,\n    pp.Product2Name,\n    pp.CoOccurrenceCount,\n    pop1.TransactionCount AS Product1Popularity,\n    pop2.TransactionCount AS Product2Popularity,\n    pp.CoOccurrenceCount * 100.0 / pop1.TransactionCount AS Product1AssociationRate,\n    pp.CoOccurrenceCount * 100.0 / pop2.TransactionCount AS Product2AssociationRate,\n    RANK() OVER (ORDER BY pp.CoOccurrenceCount DESC) AS OverallRank,\n    RANK() OVER (PARTITION BY pp.Product1 ORDER BY pp.CoOccurrenceCount DESC) AS RankForProduct1\nFROM ProductPairs pp\nJOIN ProductPopularity pop1 ON pp.Product1 = pop1.ProductID\nJOIN ProductPopularity pop2 ON pp.Product2 = pop2.ProductID\nWHERE pp.CoOccurrenceCount > 5\nORDER BY pp.CoOccurrenceCount DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/27-Customer Geographic Concentration Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 13. Geographic Customer Value Concentration\nWITH CustomerValueByLocation AS (\n    SELECT \n        c.State,\n        c.City,\n        c.CustomerID,\n        c.FirstName,\n        c.LastName,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS CustomerLTV,\n        COUNT(s.TransactionID) AS TransactionCount\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c\n    LEFT JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON c.CustomerID = s.CustomerID\n    GROUP BY c.State, c.City, c.CustomerID, c.FirstName, c.LastName\n),\nLocationSummary AS (\n    SELECT \n        State,\n        City,\n        COUNT(CustomerID) AS TotalCustomers,\n        SUM(CustomerLTV) AS TotalLocationValue,\n        AVG(CustomerLTV) AS AvgCustomerValue,\n        SUM(TransactionCount) AS TotalTransactions\n    FROM CustomerValueByLocation\n    GROUP BY State, City\n)\nSELECT \n    ls.*,\n    cvbl.CustomerID,\n    cvbl.FirstName,\n    cvbl.LastName,\n    cvbl.CustomerLTV,\n    cvbl.TransactionCount,\n    RANK() OVER (PARTITION BY ls.State, ls.City ORDER BY cvbl.CustomerLTV DESC) AS LocalRank,\n    PERCENT_RANK() OVER (PARTITION BY ls.State, ls.City ORDER BY cvbl.CustomerLTV) AS LocalPercentile,\n    cvbl.CustomerLTV * 100.0 / ls.TotalLocationValue AS ValueContributionPercentage\nFROM LocationSummary ls\nJOIN CustomerValueByLocation cvbl ON ls.State = cvbl.State AND ls.City = cvbl.City\nWHERE ls.TotalLocationValue > 0\nORDER BY ls.TotalLocationValue DESC, cvbl.CustomerLTV DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/28-Sales Velocity and Momentum Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 14. Sales Velocity and Growth Momentum\nWITH DailySalesVelocity AS (\n    SELECT \n        CAST(s.TransactionDate AS DATE) AS SalesDate,\n        COUNT(*) AS DailyTransactions,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS DailyRevenue,\n        SUM(s.Quantity) AS DailyQuantity,\n        AVG(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS AvgTransactionValue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    GROUP BY CAST(s.TransactionDate AS DATE)\n),\nSalesMomentum AS (\n    SELECT \n        SalesDate,\n        DailyTransactions,\n        DailyRevenue,\n        DailyQuantity,\n        AvgTransactionValue,\n        LAG(DailyRevenue, 1) OVER (ORDER BY SalesDate) AS PreviousDayRevenue,\n        LAG(DailyRevenue, 7) OVER (ORDER BY SalesDate) AS RevenueWeekAgo,\n        AVG(DailyRevenue) OVER (ORDER BY SalesDate ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS WeeklyMovingAvg,\n        SUM(DailyRevenue) OVER (ORDER BY SalesDate ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS WeeklyRunningTotal\n    FROM DailySalesVelocity\n)\nSELECT \n    *,\n    CASE \n        WHEN PreviousDayRevenue > 0 \n        THEN ((DailyRevenue - PreviousDayRevenue) / PreviousDayRevenue) * 100 \n        ELSE NULL \n    END AS DayOverDayGrowth,\n    CASE \n        WHEN RevenueWeekAgo > 0 \n        THEN ((DailyRevenue - RevenueWeekAgo) / RevenueWeekAgo) * 100 \n        ELSE NULL \n    END AS WeekOverWeekGrowth,\n    CASE \n        WHEN WeeklyMovingAvg > 0 \n        THEN ((DailyRevenue - WeeklyMovingAvg) / WeeklyMovingAvg) * 100 \n        ELSE NULL \n    END AS DeviationFromWeeklyAvg,\n    RANK() OVER (ORDER BY DailyRevenue DESC) AS AllTimeDailyRank,\n    PERCENT_RANK() OVER (ORDER BY DailyRevenue) AS DailyRevenuePercentile\nFROM SalesMomentum\nORDER BY SalesDate DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/29-Customer Cohort Retention Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 15. Customer Cohort Retention Analysis\nWITH CustomerCohorts AS (\n    SELECT \n        s.CustomerID,\n        DATEFROMPARTS(YEAR(MIN(s.TransactionDate)), MONTH(MIN(s.TransactionDate)), 1) AS CohortMonth\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    GROUP BY s.CustomerID\n),\nCustomerMonthlyActivity AS (\n    SELECT \n        cc.CustomerID,\n        cc.CohortMonth,\n        DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1) AS ActivityMonth,\n        DATEDIFF(MONTH, cc.CohortMonth, DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1)) AS PeriodNumber\n    FROM CustomerCohorts cc\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON cc.CustomerID = s.CustomerID\n    GROUP BY cc.CustomerID, cc.CohortMonth, DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1)\n),\nCohortAnalysis AS (\n    SELECT \n        CohortMonth,\n        PeriodNumber,\n        COUNT(DISTINCT CustomerID) AS ActiveCustomers\n    FROM CustomerMonthlyActivity\n    GROUP BY CohortMonth, PeriodNumber\n)\nSELECT \n    CohortMonth,\n    PeriodNumber,\n    ActiveCustomers,\n    FIRST_VALUE(ActiveCustomers) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber) AS CohortSize,\n    CAST(ActiveCustomers AS FLOAT) / FIRST_VALUE(ActiveCustomers) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber) * 100 AS RetentionRate,\n    LAG(ActiveCustomers, 1) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber) AS PreviousMonthActive,\n    CASE \n        WHEN LAG(ActiveCustomers, 1) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber) > 0 \n        THEN ((ActiveCustomers - LAG(ActiveCustomers, 1) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber)) / CAST(LAG(ActiveCustomers, 1) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber) AS FLOAT)) * 100 \n        ELSE NULL \n    END AS MonthlyRetentionChange\nFROM CohortAnalysis\nORDER BY CohortMonth, PeriodNumber;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/30-Product Lifecycle and Trend Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 16. Product Lifecycle and Sales Trends\nWITH ProductMonthlyTrends AS (\n    SELECT \n        p.ProductID,\n        p.ProductName,\n        p.Brand,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        SUM(s.Quantity) AS MonthlyQuantity,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n        COUNT(DISTINCT s.CustomerID) AS UniqueCustomers\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON p.ProductID = s.ProductID\n    GROUP BY p.ProductID, p.ProductName, p.Brand, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nProductTrendAnalysis AS (\n    SELECT \n        *,\n        LAG(MonthlyRevenue, 1) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth) AS PrevMonthRevenue,\n        LAG(MonthlyRevenue, 12) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth) AS RevenueYearAgo,\n        AVG(MonthlyRevenue) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS ThreeMonthMovingAvg,\n        SUM(MonthlyRevenue) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth ROWS UNBOUNDED PRECEDING) AS CumulativeRevenue,\n        RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue DESC) AS MonthlyRank\n    FROM ProductMonthlyTrends\n)\nSELECT \n    *,\n    CASE \n        WHEN PrevMonthRevenue > 0 \n        THEN ((MonthlyRevenue - PrevMonthRevenue) / PrevMonthRevenue) * 100 \n        ELSE NULL \n    END AS MonthOverMonthGrowth,\n    CASE \n        WHEN RevenueYearAgo > 0 \n        THEN ((MonthlyRevenue - RevenueYearAgo) / RevenueYearAgo) * 100 \n        ELSE NULL \n    END AS YearOverYearGrowth,\n    CASE \n        WHEN ThreeMonthMovingAvg > 0 \n        THEN ((MonthlyRevenue - ThreeMonthMovingAvg) / ThreeMonthMovingAvg) * 100 \n        ELSE NULL \n    END AS DeviationFromTrend,\n    PERCENT_RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue) AS MonthlyPercentile\nFROM ProductTrendAnalysis\nORDER BY ProductID, SalesYear, SalesMonth;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/31-Customer Value Prediction using Historical Patterns')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 17. Customer Future Value Prediction\nWITH CustomerMonthlyValue AS (\n    SELECT \n        s.CustomerID,\n        c.FirstName,\n        c.LastName,\n        c.State,\n        DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1) AS ValueMonth,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyValue,\n        COUNT(*) AS MonthlyTransactions\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c ON s.CustomerID = c.CustomerID\n    GROUP BY s.CustomerID, c.FirstName, c.LastName, c.State, DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1)\n),\nCustomerValueTrends AS (\n    SELECT \n        *,\n        AVG(MonthlyValue) OVER (PARTITION BY CustomerID ORDER BY ValueMonth ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) AS FourMonthMovingAvg,\n        LAG(MonthlyValue, 1) OVER (PARTITION BY CustomerID ORDER BY ValueMonth) AS PrevMonthValue,\n        LAG(MonthlyValue, 12) OVER (PARTITION BY CustomerID ORDER BY ValueMonth) AS ValueYearAgo,\n        SUM(MonthlyValue) OVER (PARTITION BY CustomerID ORDER BY ValueMonth ROWS UNBOUNDED PRECEDING) AS CumulativeLifetimeValue,\n        ROW_NUMBER() OVER (PARTITION BY CustomerID ORDER BY ValueMonth DESC) AS RecencyRank\n    FROM CustomerMonthlyValue\n)\nSELECT \n    CustomerID,\n    FirstName,\n    LastName,\n    State,\n    ValueMonth,\n    MonthlyValue,\n    MonthlyTransactions,\n    FourMonthMovingAvg,\n    PrevMonthValue,\n    ValueYearAgo,\n    CumulativeLifetimeValue,\n    CASE \n        WHEN PrevMonthValue > 0 \n        THEN ((MonthlyValue - PrevMonthValue) / PrevMonthValue) * 100 \n        ELSE NULL \n    END AS MonthlyGrowthRate,\n    CASE \n        WHEN ValueYearAgo > 0 \n        THEN ((MonthlyValue - ValueYearAgo) / ValueYearAgo) * 100 \n        ELSE NULL \n    END AS YearlyGrowthRate,\n    CASE \n        WHEN RecencyRank = 1 THEN 'Current'\n        WHEN RecencyRank = 2 THEN 'Last Month'\n        WHEN RecencyRank <= 6 THEN 'Recent'\n        ELSE 'Historical'\n    END AS DataRecency,\n    PERCENT_RANK() OVER (PARTITION BY ValueMonth ORDER BY MonthlyValue) AS MonthlyValuePercentile,\n    NTILE(5) OVER (ORDER BY CumulativeLifetimeValue DESC) AS LifetimeValueQuintile\nFROM CustomerValueTrends\nORDER BY CustomerID, ValueMonth DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/32-Store Performance Gap Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 18. Store Performance Gap Analysis with Benchmarks\nWITH StorePerformance AS (\n    SELECT \n        st.StoreID,\n        st.StoreName,\n        st.Region,\n        st.StoreType,\n        YEAR(s.TransactionDate) AS PerformanceYear,\n        MONTH(s.TransactionDate) AS PerformanceMonth,\n        COUNT(*) AS MonthlyTransactions,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n        AVG(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS AvgTransactionValue,\n        COUNT(DISTINCT s.CustomerID) AS UniqueCustomers\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS st\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON st.StoreID = s.StoreID\n    GROUP BY st.StoreID, st.StoreName, st.Region, st.StoreType, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nStoreBenchmarks AS (\n    SELECT \n        *,\n        AVG(MonthlyRevenue) OVER (PARTITION BY Region, StoreType ORDER BY PerformanceYear, PerformanceMonth ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS RegionalTypeMovingAvg,\n        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY MonthlyRevenue) OVER (PARTITION BY Region, StoreType, PerformanceYear, PerformanceMonth) AS RegionalTypeMedian,\n        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY MonthlyRevenue) OVER (PARTITION BY Region, StoreType, PerformanceYear, PerformanceMonth) AS RegionalTypeTopQuartile,\n        RANK() OVER (PARTITION BY Region, StoreType, PerformanceYear, PerformanceMonth ORDER BY MonthlyRevenue DESC) AS RegionalTypeRank\n    FROM StorePerformance\n)\nSELECT \n    *,\n    MonthlyRevenue - RegionalTypeMovingAvg AS RevenueVsMovingAvg,\n    CASE \n        WHEN RegionalTypeMovingAvg > 0 \n        THEN ((MonthlyRevenue - RegionalTypeMovingAvg) / RegionalTypeMovingAvg) * 100 \n        ELSE NULL \n    END AS RevenueVsMovingAvgPct,\n    CASE \n        WHEN MonthlyRevenue >= RegionalTypeTopQuartile THEN 'Top Performer'\n        WHEN MonthlyRevenue >= RegionalTypeMedian THEN 'Above Average'\n        ELSE 'Below Average'\n    END AS PerformanceCategory,\n    LAG(RegionalTypeRank, 1) OVER (PARTITION BY StoreID ORDER BY PerformanceYear, PerformanceMonth) AS PreviousMonthRank,\n    RegionalTypeRank - LAG(RegionalTypeRank, 1) OVER (PARTITION BY StoreID ORDER BY PerformanceYear, PerformanceMonth) AS RankChange\nFROM StoreBenchmarks\nORDER BY StoreID, PerformanceYear, PerformanceMonth;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/33-Seasonal Product Performance Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 19. Seasonal Product Performance and Timing\nWITH ProductSeasonalSales AS (\n    SELECT \n        p.ProductID,\n        p.ProductName,\n        p.Brand,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        DATEPART(QUARTER, s.TransactionDate) AS SalesQuarter,\n        CASE \n            WHEN MONTH(s.TransactionDate) IN (12, 1, 2) THEN 'Winter'\n            WHEN MONTH(s.TransactionDate) IN (3, 4, 5) THEN 'Spring'\n            WHEN MONTH(s.TransactionDate) IN (6, 7, 8) THEN 'Summer'\n            ELSE 'Fall'\n        END AS Season,\n        SUM(s.Quantity) AS SeasonalQuantity,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS SeasonalRevenue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON p.ProductID = s.ProductID\n    GROUP BY p.ProductID, p.ProductName, p.Brand, YEAR(s.TransactionDate), MONTH(s.TransactionDate), DATEPART(QUARTER, s.TransactionDate)\n),\nProductSeasonalTrends AS (\n    SELECT \n        ProductID,\n        ProductName,\n        Brand,\n        Season,\n        AVG(SeasonalRevenue) AS AvgSeasonalRevenue,\n        SUM(SeasonalRevenue) AS TotalSeasonalRevenue,\n        COUNT(*) AS SeasonsTracked\n    FROM ProductSeasonalSales\n    GROUP BY ProductID, ProductName, Brand, Season\n),\nSeasonalRankings AS (\n    SELECT \n        *,\n        RANK() OVER (PARTITION BY ProductID ORDER BY AvgSeasonalRevenue DESC) AS BestSeasonRank,\n        RANK() OVER (PARTITION BY ProductID ORDER BY AvgSeasonalRevenue ASC) AS WorstSeasonRank,\n        PERCENT_RANK() OVER (PARTITION BY Season ORDER BY AvgSeasonalRevenue) AS SeasonalPercentile,\n        LAG(AvgSeasonalRevenue, 1) OVER (PARTITION BY ProductID ORDER BY \n            CASE Season \n                WHEN 'Winter' THEN 1\n                WHEN 'Spring' THEN 2  \n                WHEN 'Summer' THEN 3\n                WHEN 'Fall' THEN 4\n            END) AS PreviousSeasonRevenue\n    FROM ProductSeasonalTrends\n)\nSELECT \n    *,\n    CASE \n        WHEN PreviousSeasonRevenue > 0 \n        THEN ((AvgSeasonalRevenue - PreviousSeasonRevenue) / PreviousSeasonRevenue) * 100 \n        ELSE NULL \n    END AS SeasonalSequentialGrowth,\n    CASE \n        WHEN BestSeasonRank = 1 THEN 'Peak Season'\n        WHEN WorstSeasonRank = 1 THEN 'Off Season'\n        ELSE 'Moderate Season'\n    END AS SeasonalPerformance,\n    NTILE(4) OVER (PARTITION BY Season ORDER BY AvgSeasonalRevenue DESC) AS SeasonalPerformanceQuartile\nFROM SeasonalRankings\nORDER BY ProductID, \n    CASE Season \n        WHEN 'Winter' THEN 1\n        WHEN 'Spring' THEN 2  \n        WHEN 'Summer' THEN 3\n        WHEN 'Fall' THEN 4\n    END;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
 						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
