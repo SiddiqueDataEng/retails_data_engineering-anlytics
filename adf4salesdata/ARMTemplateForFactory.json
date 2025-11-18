@@ -70,7 +70,7 @@
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ".txt"
+									"fileExtension": ".csv"
 								}
 							},
 							"enableStaging": false,
@@ -137,7 +137,7 @@
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ".txt"
+									"fileExtension": ".csv"
 								}
 							},
 							"enableStaging": false,
@@ -204,7 +204,7 @@
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ".txt"
+									"fileExtension": ".csv"
 								}
 							},
 							"enableStaging": false,
@@ -239,7 +239,7 @@
 							{
 								"activity": "CopyData_Products",
 								"dependencyConditions": [
-									"Failed"
+									"Succeeded"
 								]
 							}
 						],
@@ -271,7 +271,7 @@
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ".txt"
+									"fileExtension": ".csv"
 								}
 							},
 							"enableStaging": false,
@@ -338,7 +338,7 @@
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ".txt"
+									"fileExtension": ".csv"
 								}
 							},
 							"enableStaging": false,
@@ -405,7 +405,7 @@
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ".txt"
+									"fileExtension": ".csv"
 								}
 							},
 							"enableStaging": false,
@@ -432,6 +432,64 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "Succeeded",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "CopyData_Subcategories",
+								"dependencyConditions": [
+									"Skipped"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-94.eastus.logic.azure.com:443/workflows/ad354d5e043d427aa25b11815f5003cb/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=kBjgUsLhyX38_ErQKzXbkVY7kBOy_aE9aE6xWvwZJAs",
+							"body": {
+								"value": "\"pipelineName\": \"@{pipeline().Pipeline}\",\n\"status\": \"Succeeded\",\n\"runId\": \"@{pipeline().RunId}\",\n\"time\": \"@{utcNow()}\",",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Failed",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "CopyData_Subcategories",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-94.eastus.logic.azure.com:443/workflows/ad354d5e043d427aa25b11815f5003cb/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=kBjgUsLhyX38_ErQKzXbkVY7kBOy_aE9aE6xWvwZJAs",
+							"body": {
+								"value": "\"pipelineName\": \"@{pipeline().Pipeline}\",\n\"status\": \"Succeeded\",\n\"runId\": \"@{pipeline().RunId}\",\n\"time\": \"@{utcNow()}\",",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
@@ -888,6 +946,36 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trigger_runpipeline_daily')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pipeline_loading_csvfiles_from_localfolder",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2025-11-18T08:19:00",
+						"timeZone": "Pakistan Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pipeline_loading_csvfiles_from_localfolder')]"
+			]
 		}
 	]
 }
