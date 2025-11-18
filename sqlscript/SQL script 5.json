@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 5",
+	"properties": {
+		"content": {
+			"query": "-- 4. Monthly trends (CORRECTED)\nSELECT \n    SalesYear,\n    SalesMonth,\n    MonthlyRevenue,\n    TransactionCount,\n    TotalQuantity\nFROM dbo.vw_monthly_sales_trend\nORDER BY SalesYear, SalesMonth;\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "salesdata",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

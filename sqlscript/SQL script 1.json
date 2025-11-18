@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"content": {
+			"query": "-- 1. Total revenue overview \nSELECT \n    SUM(MonthlyRevenue) AS OverallRevenue,\n    SUM(TransactionCount) AS TotalTransactions,\n    AVG(AvgTransactionValue) AS OverallAvgTransaction\nFROM dbo.vw_monthly_sales_trend;\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "salesdata",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 4",
+	"properties": {
+		"content": {
+			"query": "-- 3. Customer segmentation summary (CORRECTED - using direct query)\nSELECT \n    CASE \n        WHEN TotalSpent > 1000 THEN 'VIP'\n        WHEN TotalSpent > 500 THEN 'Premium'\n        WHEN TotalSpent > 200 THEN 'Standard'\n        ELSE 'Basic'\n    END AS CustomerSegment,\n    COUNT(*) AS CustomerCount,\n    AVG(TotalSpent) AS AvgSpending,\n    AVG(TotalTransactions) AS AvgTransactions\nFROM dbo.vw_customer_analytics\nGROUP BY \n    CASE \n        WHEN TotalSpent > 1000 THEN 'VIP'\n        WHEN TotalSpent > 500 THEN 'Premium'\n        WHEN TotalSpent > 200 THEN 'Standard'\n        ELSE 'Basic'\n    END\nORDER BY AvgSpending DESC;\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
