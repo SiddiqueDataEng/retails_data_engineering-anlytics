@@ -1,8 +1,8 @@
 {
-	"name": "SQL script 6",
+	"name": "11-Store performance comparison",
 	"properties": {
 		"content": {
-			"query": "-- 5. Store performance comparison (CORRECTED)\nSELECT *\nFROM dbo.vw_store_performance\nORDER BY TotalRevenue DESC;",
+			"query": "-- 11. Store performance comparison\nSELECT *\nFROM dbo.vw_store_performance\nORDER BY TotalRevenue DESC;",
 			"metadata": {
 				"language": "sql"
 			},

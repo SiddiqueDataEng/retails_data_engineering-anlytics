@@ -1,8 +1,8 @@
 {
-	"name": "SQL script 1",
+	"name": "7-Total revenue overview",
 	"properties": {
 		"content": {
-			"query": "-- 1. Total revenue overview \nSELECT \n    SUM(MonthlyRevenue) AS OverallRevenue,\n    SUM(TransactionCount) AS TotalTransactions,\n    AVG(AvgTransactionValue) AS OverallAvgTransaction\nFROM dbo.vw_monthly_sales_trend;\n\n",
+			"query": "-- 7. Total revenue overview \nSELECT \n    SUM(MonthlyRevenue) AS OverallRevenue,\n    SUM(TransactionCount) AS TotalTransactions,\n    AVG(AvgTransactionValue) AS OverallAvgTransaction\nFROM dbo.vw_monthly_sales_trend;\n\n",
 			"metadata": {
 				"language": "sql"
 			},

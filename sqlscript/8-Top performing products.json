@@ -1,8 +1,8 @@
 {
-	"name": "SQL script 3",
+	"name": "8-Top performing products",
 	"properties": {
 		"content": {
-			"query": "-- 2. Top performing products (CORRECTED)\nSELECT TOP 10 *\nFROM dbo.vw_product_performance \nORDER BY TotalRevenue DESC;\n\n",
+			"query": "-- 8. Top performing products \nSELECT TOP 10 *\nFROM dbo.vw_product_performance \nORDER BY TotalRevenue DESC;\n\n",
 			"metadata": {
 				"language": "sql"
 			},
