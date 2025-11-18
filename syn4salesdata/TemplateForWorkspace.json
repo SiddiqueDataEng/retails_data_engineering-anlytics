@@ -1,0 +1,377 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "syn4salesdata"
+		},
+		"syn4salesdata-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'syn4salesdata-WorkspaceDefaultSqlServer'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:syn4salesdata.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"syn4salesdata-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://adls4salesdata.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/syn4salesdata-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('syn4salesdata-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/syn4salesdata-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('syn4salesdata-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/1-Create Database and Direct Query Views')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "\n-- Create views using OPENROWSET with actual file paths\nCREATE VIEW dbo.vw_customers AS \nSELECT *\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS customers;\nGO\n\nCREATE VIEW dbo.vw_products AS \nSELECT *\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS products;\nGO\n\nCREATE VIEW dbo.vw_sales AS \nSELECT *\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS sales;\nGO\n\nCREATE VIEW dbo.vw_stores AS \nSELECT *\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS stores;\nGO\n\nCREATE VIEW dbo.vw_retail_analytical AS \nSELECT *\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/retail_analytical_dataset.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS retail_analytical;\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/2-Enhanced Sales Data View with Calculations')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE VIEW dbo.vw_sales_enriched AS \nSELECT \n    s.*,\n    s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0) AS TotalAmount,\n    s.Quantity * s.UnitPrice AS GrossAmount,\n    CASE \n        WHEN s.Quantity * s.UnitPrice > 0 \n        THEN (ISNULL(s.Discount, 0) / (s.Quantity * s.UnitPrice)) * 100 \n        ELSE 0 \n    END AS DiscountPercentage,\n    DATEPART(YEAR, s.TransactionDate) AS TransactionYear,\n    DATEPART(MONTH, s.TransactionDate) AS TransactionMonth,\n    DATEPART(QUARTER, s.TransactionDate) AS TransactionQuarter,\n    DATENAME(MONTH, s.TransactionDate) AS TransactionMonthName,\n    DATEPART(WEEK, s.TransactionDate) AS TransactionWeek,\n    FORMAT(s.TransactionDate, 'yyyy-MM') AS YearMonth\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s;\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/3-Comprehensive Sales Analysis Views')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 1. Daily Sales Summary View\nCREATE VIEW dbo.vw_daily_sales_summary AS\nSELECT \n    CAST(s.TransactionDate AS DATE) AS SalesDate,\n    COUNT(*) AS TotalTransactions,\n    SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS DailyRevenue,\n    SUM(s.Quantity) AS TotalQuantitySold,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers,\n    COUNT(DISTINCT s.ProductID) AS UniqueProducts,\n    AVG(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS AvgTransactionValue,\n    SUM(ISNULL(s.Discount, 0)) AS TotalDiscounts\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nGROUP BY CAST(s.TransactionDate AS DATE);\nGO\n\n-- 2. Product Performance View\nCREATE VIEW dbo.vw_product_performance AS\nSELECT \n    p.ProductID,\n    p.ProductName,\n    p.Brand,\n    p.CategoryID,\n    p.SubcategoryID,\n    p.CostPrice,\n    p.SellingPrice,\n    COUNT(s.TransactionID) AS TransactionCount,\n    SUM(COALESCE(s.Quantity, 0)) AS TotalQuantitySold,\n    SUM(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS TotalRevenue,\n    AVG(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS AvgTransactionValue,\n    SUM(COALESCE(s.Quantity * (s.UnitPrice - p.CostPrice), 0)) AS TotalProfit,\n    CASE \n        WHEN SUM(COALESCE(s.Quantity * s.UnitPrice, 0)) > 0 \n        THEN (SUM(COALESCE(s.Quantity * (s.UnitPrice - p.CostPrice), 0)) / SUM(COALESCE(s.Quantity * s.UnitPrice, 0))) * 100 \n        ELSE 0 \n    END AS ProfitMarginPercentage\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS p\nLEFT JOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s ON p.ProductID = s.ProductID\nGROUP BY p.ProductID, p.ProductName, p.Brand, p.CategoryID, p.SubcategoryID, p.CostPrice, p.SellingPrice;\nGO\n\n-- 3. Customer Analytics View\nCREATE VIEW dbo.vw_customer_analytics AS\nSELECT \n    c.CustomerID,\n    c.FirstName,\n    c.LastName,\n    c.City,\n    c.State,\n    c.Country,\n    COUNT(s.TransactionID) AS TotalTransactions,\n    SUM(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS TotalSpent,\n    AVG(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS AvgTransactionValue,\n    MIN(s.TransactionDate) AS FirstPurchaseDate,\n    MAX(s.TransactionDate) AS LastPurchaseDate,\n    DATEDIFF(DAY, MIN(s.TransactionDate), MAX(s.TransactionDate)) AS CustomerLifetimeDays,\n    COUNT(DISTINCT CAST(s.TransactionDate AS DATE)) AS ActiveDays,\n    COUNT(DISTINCT s.ProductID) AS UniqueProductsPurchased\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS c\nLEFT JOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s ON c.CustomerID = s.CustomerID\nGROUP BY c.CustomerID, c.FirstName, c.LastName, c.City, c.State, c.Country;\nGO\n\n-- 4. Store Performance View\nCREATE VIEW dbo.vw_store_performance AS\nSELECT \n    st.StoreID,\n    st.StoreName,\n    st.City,\n    st.State,\n    st.Region,\n    st.StoreType,\n    COUNT(s.TransactionID) AS TotalTransactions,\n    SUM(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS TotalRevenue,\n    SUM(COALESCE(s.Quantity, 0)) AS TotalQuantitySold,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers,\n    AVG(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS AvgTransactionValue,\n    COUNT(DISTINCT s.ProductID) AS UniqueProducts,\n    SUM(COALESCE(ISNULL(s.Discount, 0), 0)) AS TotalDiscountsGiven\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS st\nLEFT JOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s ON st.StoreID = s.StoreID\nGROUP BY st.StoreID, st.StoreName, st.City, st.State, st.Region, st.StoreType;\nGO\n\n-- 5. Monthly Sales Trend View\nCREATE VIEW dbo.vw_monthly_sales_trend AS\nSELECT \n    YEAR(s.TransactionDate) AS SalesYear,\n    MONTH(s.TransactionDate) AS SalesMonth,\n    DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1) AS SalesPeriod,\n    COUNT(*) AS TransactionCount,\n    SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n    SUM(s.Quantity) AS TotalQuantity,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers,\n    COUNT(DISTINCT s.ProductID) AS UniqueProducts,\n    AVG(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS AvgTransactionValue,\n    SUM(ISNULL(s.Discount, 0)) AS TotalDiscounts\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nGROUP BY YEAR(s.TransactionDate), MONTH(s.TransactionDate);\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/4-Advanced Analytical Views')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 6. Customer Segmentation View\nCREATE VIEW dbo.vw_customer_segments AS\nWITH CustomerMetrics AS (\n    SELECT \n        c.CustomerID,\n        c.FirstName + ' ' + c.LastName AS CustomerName,\n        c.State,\n        c.City,\n        COUNT(s.TransactionID) AS TransactionCount,\n        SUM(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS TotalSpent,\n        AVG(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS AvgTransactionValue,\n        DATEDIFF(DAY, MIN(s.TransactionDate), MAX(s.TransactionDate)) AS CustomerLifetime,\n        COUNT(DISTINCT s.ProductID) AS UniqueProducts\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON c.CustomerID = s.CustomerID\n    GROUP BY c.CustomerID, c.FirstName, c.LastName, c.State, c.City\n)\nSELECT *,\n    CASE \n        WHEN TotalSpent > 1000 AND TransactionCount > 15 THEN 'VIP'\n        WHEN TotalSpent > 500 AND TransactionCount > 8 THEN 'Premium'\n        WHEN TotalSpent > 200 THEN 'Standard'\n        ELSE 'Basic'\n    END AS CustomerSegment,\n    CASE \n        WHEN CustomerLifetime > 180 THEN 'Long-Term'\n        WHEN CustomerLifetime > 90 THEN 'Medium-Term'\n        ELSE 'New'\n    END AS CustomerTenure,\n    NTILE(4) OVER (ORDER BY TotalSpent DESC) AS SpendingQuartile,\n    NTILE(4) OVER (ORDER BY TransactionCount DESC) AS FrequencyQuartile\nFROM CustomerMetrics;\nGO\n\n-- 7. Regional Sales Analysis View\nCREATE VIEW dbo.vw_regional_sales AS\nSELECT \n    st.Region,\n    st.State,\n    COUNT(DISTINCT st.StoreID) AS StoreCount,\n    COUNT(s.TransactionID) AS TotalTransactions,\n    SUM(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS TotalRevenue,\n    SUM(COALESCE(s.Quantity, 0)) AS TotalQuantitySold,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers,\n    COUNT(DISTINCT s.ProductID) AS UniqueProducts,\n    AVG(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS AvgTransactionValue,\n    SUM(COALESCE(ISNULL(s.Discount, 0), 0)) AS TotalDiscounts\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS st\nJOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s ON st.StoreID = s.StoreID\nGROUP BY st.Region, st.State;\nGO\n\n-- 8. Payment Method Analysis View\nCREATE VIEW dbo.vw_payment_analysis AS\nSELECT \n    s.PaymentMethod,\n    COUNT(*) AS TransactionCount,\n    SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS TotalAmount,\n    AVG(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS AvgTransactionValue,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers,\n    COUNT(DISTINCT s.StoreID) AS StoresUsed,\n    MIN(s.TransactionDate) AS FirstUsage,\n    MAX(s.TransactionDate) AS LastUsage,\n    SUM(ISNULL(s.Discount, 0)) AS TotalDiscounts\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nGROUP BY s.PaymentMethod;\nGO\n\n-- 9. Product Category Performance View\nCREATE VIEW dbo.vw_category_performance AS\nSELECT \n    p.CategoryID,\n    COUNT(DISTINCT p.ProductID) AS ProductCount,\n    COUNT(DISTINCT p.SubcategoryID) AS SubcategoryCount,\n    SUM(COALESCE(s.Quantity, 0)) AS TotalQuantitySold,\n    SUM(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS TotalRevenue,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers,\n    COUNT(DISTINCT s.StoreID) AS StoresSelling,\n    AVG(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS AvgTransactionValue,\n    SUM(COALESCE(s.Quantity * (s.UnitPrice - p.CostPrice), 0)) AS TotalProfit\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS p\nLEFT JOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s ON p.ProductID = s.ProductID\nGROUP BY p.CategoryID;\nGO\n\n-- 10. Retail Analytical Dataset View (if needed)\nCREATE VIEW dbo.vw_retail_analytical_enriched AS \nSELECT \n    ra.*,\n    DATEPART(YEAR, ra.TransactionDate) AS TransactionYear,\n    DATEPART(MONTH, ra.TransactionDate) AS TransactionMonth,\n    DATEPART(QUARTER, ra.TransactionDate) AS TransactionQuarter\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/retail_analytical_dataset.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS ra;\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/5-Quick Analysis Queries Using Views')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 1. Create basic enriched sales view\nCREATE OR ALTER VIEW dbo.vw_sales_enriched AS \nSELECT \n    s.*,\n    s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0) AS TotalAmount,\n    s.Quantity * s.UnitPrice AS GrossAmount,\n    CASE \n        WHEN s.Quantity * s.UnitPrice > 0 \n        THEN (ISNULL(s.Discount, 0) / (s.Quantity * s.UnitPrice)) * 100 \n        ELSE 0 \n    END AS DiscountPercentage,\n    YEAR(s.TransactionDate) AS TransactionYear,\n    MONTH(s.TransactionDate) AS TransactionMonth,\n    DATENAME(MONTH, s.TransactionDate) AS TransactionMonthName\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s;\nGO\n\n-- 2. Create monthly sales trend view\nCREATE OR ALTER VIEW dbo.vw_monthly_sales_trend AS\nSELECT \n    YEAR(s.TransactionDate) AS SalesYear,\n    MONTH(s.TransactionDate) AS SalesMonth,\n    DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1) AS SalesPeriod,\n    COUNT(*) AS TransactionCount,\n    SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n    SUM(s.Quantity) AS TotalQuantity,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers,\n    COUNT(DISTINCT s.ProductID) AS UniqueProducts,\n    AVG(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS AvgTransactionValue\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nGROUP BY YEAR(s.TransactionDate), MONTH(s.TransactionDate);\nGO\n\n-- 3. Create product performance view\nCREATE OR ALTER VIEW dbo.vw_product_performance AS\nSELECT \n    p.ProductID,\n    p.ProductName,\n    p.Brand,\n    p.CategoryID,\n    COUNT(s.TransactionID) AS TransactionCount,\n    SUM(COALESCE(s.Quantity, 0)) AS TotalQuantitySold,\n    SUM(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS TotalRevenue,\n    AVG(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS AvgTransactionValue\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS p\nLEFT JOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s ON p.ProductID = s.ProductID\nGROUP BY p.ProductID, p.ProductName, p.Brand, p.CategoryID;\nGO\n\n-- 4. Create customer analytics view\nCREATE OR ALTER VIEW dbo.vw_customer_analytics AS\nSELECT \n    c.CustomerID,\n    c.FirstName,\n    c.LastName,\n    c.City,\n    c.State,\n    COUNT(s.TransactionID) AS TotalTransactions,\n    SUM(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS TotalSpent,\n    AVG(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS AvgTransactionValue,\n    MIN(s.TransactionDate) AS FirstPurchaseDate,\n    MAX(s.TransactionDate) AS LastPurchaseDate\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS c\nLEFT JOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s ON c.CustomerID = s.CustomerID\nGROUP BY c.CustomerID, c.FirstName, c.LastName, c.City, c.State;\nGO\n\n-- 5. Create store performance view\nCREATE OR ALTER VIEW dbo.vw_store_performance AS\nSELECT \n    st.StoreID,\n    st.StoreName,\n    st.City,\n    st.State,\n    st.Region,\n    COUNT(s.TransactionID) AS TotalTransactions,\n    SUM(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS TotalRevenue,\n    SUM(COALESCE(s.Quantity, 0)) AS TotalQuantitySold,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers,\n    AVG(COALESCE(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0), 0)) AS AvgTransactionValue\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS st\nLEFT JOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s ON st.StoreID = s.StoreID\nGROUP BY st.StoreID, st.StoreName, st.City, st.State, st.Region;\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/6-Data Quality Check Queries')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- Data quality and validation queries\n-- Check for missing values\nSELECT \n    'Sales' AS TableName,\n    COUNT(*) AS TotalRows,\n    SUM(CASE WHEN CustomerID IS NULL THEN 1 ELSE 0 END) AS MissingCustomerID,\n    SUM(CASE WHEN ProductID IS NULL THEN 1 ELSE 0 END) AS MissingProductID,\n    SUM(CASE WHEN TransactionDate IS NULL THEN 1 ELSE 0 END) AS MissingTransactionDate\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s;\n\n-- Check date range\nSELECT \n    MIN(TransactionDate) AS EarliestDate,\n    MAX(TransactionDate) AS LatestDate,\n    DATEDIFF(DAY, MIN(TransactionDate), MAX(TransactionDate)) AS DateRangeDays\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/7-Total revenue overview')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 7. Total revenue overview \nSELECT \n    SUM(MonthlyRevenue) AS OverallRevenue,\n    SUM(TransactionCount) AS TotalTransactions,\n    AVG(AvgTransactionValue) AS OverallAvgTransaction\nFROM dbo.vw_monthly_sales_trend;\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/13-Daily sales performance')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 13. Daily sales performance\nSELECT \n    CAST(TransactionDate AS DATE) AS SalesDate,\n    COUNT(*) AS DailyTransactions,\n    SUM(Quantity * UnitPrice - ISNULL(Discount, 0)) AS DailyRevenue,\n    AVG(Quantity * UnitPrice - ISNULL(Discount, 0)) AS AvgDailyTransaction\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nGROUP BY CAST(TransactionDate AS DATE)\nORDER BY SalesDate DESC;\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/8-Top performing products')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 8. Top performing products \nSELECT TOP 10 *\nFROM dbo.vw_product_performance \nORDER BY TotalRevenue DESC;\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/9-Customer segmentation summary')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 9. Customer segmentation summary\nSELECT \n    CASE \n        WHEN TotalSpent > 1000 THEN 'VIP'\n        WHEN TotalSpent > 500 THEN 'Premium'\n        WHEN TotalSpent > 200 THEN 'Standard'\n        ELSE 'Basic'\n    END AS CustomerSegment,\n    COUNT(*) AS CustomerCount,\n    AVG(TotalSpent) AS AvgSpending,\n    AVG(TotalTransactions) AS AvgTransactions\nFROM dbo.vw_customer_analytics\nGROUP BY \n    CASE \n        WHEN TotalSpent > 1000 THEN 'VIP'\n        WHEN TotalSpent > 500 THEN 'Premium'\n        WHEN TotalSpent > 200 THEN 'Standard'\n        ELSE 'Basic'\n    END\nORDER BY AvgSpending DESC;\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/10-Monthly trends')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 10. Monthly trends \nSELECT \n    SalesYear,\n    SalesMonth,\n    MonthlyRevenue,\n    TransactionCount,\n    TotalQuantity\nFROM dbo.vw_monthly_sales_trend\nORDER BY SalesYear, SalesMonth;\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/11-Store performance comparison')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 11. Store performance comparison\nSELECT *\nFROM dbo.vw_store_performance\nORDER BY TotalRevenue DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/12-Payment method analysis')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 12. Payment method analysis\nSELECT \n    PaymentMethod,\n    COUNT(*) AS TransactionCount,\n    SUM(Quantity * UnitPrice - ISNULL(Discount, 0)) AS TotalAmount,\n    AVG(Quantity * UnitPrice - ISNULL(Discount, 0)) AS AvgTransactionValue\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nGROUP BY PaymentMethod\nORDER BY TotalAmount DESC;\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/13-Regional performance')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- 13. Regional performance\nSELECT \n    st.Region,\n    st.State,\n    COUNT(*) AS TransactionCount,\n    SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS TotalRevenue,\n    COUNT(DISTINCT s.CustomerID) AS UniqueCustomers\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s\nJOIN OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS st ON s.StoreID = st.StoreID\nGROUP BY st.Region, st.State\nORDER BY TotalRevenue DESC;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "salesdata",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		}
+	]
+}
