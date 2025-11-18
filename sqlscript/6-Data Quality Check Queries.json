@@ -1,0 +1,17 @@
+{
+	"name": "6-Data Quality Check Queries",
+	"properties": {
+		"content": {
+			"query": "-- Data quality and validation queries\n-- Check for missing values\nSELECT \n    'Sales' AS TableName,\n    COUNT(*) AS TotalRows,\n    SUM(CASE WHEN CustomerID IS NULL THEN 1 ELSE 0 END) AS MissingCustomerID,\n    SUM(CASE WHEN ProductID IS NULL THEN 1 ELSE 0 END) AS MissingProductID,\n    SUM(CASE WHEN TransactionDate IS NULL THEN 1 ELSE 0 END) AS MissingTransactionDate\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s;\n\n-- Check date range\nSELECT \n    MIN(TransactionDate) AS EarliestDate,\n    MAX(TransactionDate) AS LatestDate,\n    DATEDIFF(DAY, MIN(TransactionDate), MAX(TransactionDate)) AS DateRangeDays\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "salesdata",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
