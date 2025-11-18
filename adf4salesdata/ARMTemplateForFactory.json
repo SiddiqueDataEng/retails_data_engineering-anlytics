@@ -440,7 +440,7 @@
 							{
 								"activity": "CopyData_Subcategories",
 								"dependencyConditions": [
-									"Skipped"
+									"Succeeded"
 								]
 							}
 						],
@@ -469,7 +469,7 @@
 							{
 								"activity": "CopyData_Subcategories",
 								"dependencyConditions": [
-									"Completed"
+									"Failed"
 								]
 							}
 						],
@@ -937,17 +937,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ASHIR')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "SelfHosted",
-				"description": "azure self-hosted integration runtime",
-				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/trigger_runpipeline_daily')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -976,6 +965,17 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pipeline_loading_csvfiles_from_localfolder')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ASHIR')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"description": "azure self-hosted integration runtime",
+				"typeProperties": {}
+			},
+			"dependsOn": []
 		}
 	]
 }

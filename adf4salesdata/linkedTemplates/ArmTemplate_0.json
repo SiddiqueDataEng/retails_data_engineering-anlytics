@@ -880,7 +880,7 @@
 							{
 								"activity": "CopyData_Subcategories",
 								"dependencyConditions": [
-									"Skipped"
+									"Succeeded"
 								]
 							}
 						],
@@ -909,7 +909,7 @@
 							{
 								"activity": "CopyData_Subcategories",
 								"dependencyConditions": [
-									"Completed"
+									"Failed"
 								]
 							}
 						],
