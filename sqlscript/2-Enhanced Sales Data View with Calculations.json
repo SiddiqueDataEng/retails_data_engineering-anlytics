@@ -1,0 +1,17 @@
+{
+	"name": "2-Enhanced Sales Data View with Calculations",
+	"properties": {
+		"content": {
+			"query": "CREATE VIEW dbo.vw_sales_enriched AS \nSELECT \n    s.*,\n    s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0) AS TotalAmount,\n    s.Quantity * s.UnitPrice AS GrossAmount,\n    CASE \n        WHEN s.Quantity * s.UnitPrice > 0 \n        THEN (ISNULL(s.Discount, 0) / (s.Quantity * s.UnitPrice)) * 100 \n        ELSE 0 \n    END AS DiscountPercentage,\n    DATEPART(YEAR, s.TransactionDate) AS TransactionYear,\n    DATEPART(MONTH, s.TransactionDate) AS TransactionMonth,\n    DATEPART(QUARTER, s.TransactionDate) AS TransactionQuarter,\n    DATENAME(MONTH, s.TransactionDate) AS TransactionMonthName,\n    DATEPART(WEEK, s.TransactionDate) AS TransactionWeek,\n    FORMAT(s.TransactionDate, 'yyyy-MM') AS YearMonth\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS s;\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "salesdata",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
