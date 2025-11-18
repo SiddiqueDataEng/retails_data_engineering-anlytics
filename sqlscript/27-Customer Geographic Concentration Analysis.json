@@ -1,0 +1,17 @@
+{
+	"name": "27-Customer Geographic Concentration Analysis",
+	"properties": {
+		"content": {
+			"query": "-- 13. Geographic Customer Value Concentration\nWITH CustomerValueByLocation AS (\n    SELECT \n        c.State,\n        c.City,\n        c.CustomerID,\n        c.FirstName,\n        c.LastName,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS CustomerLTV,\n        COUNT(s.TransactionID) AS TransactionCount\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c\n    LEFT JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON c.CustomerID = s.CustomerID\n    GROUP BY c.State, c.City, c.CustomerID, c.FirstName, c.LastName\n),\nLocationSummary AS (\n    SELECT \n        State,\n        City,\n        COUNT(CustomerID) AS TotalCustomers,\n        SUM(CustomerLTV) AS TotalLocationValue,\n        AVG(CustomerLTV) AS AvgCustomerValue,\n        SUM(TransactionCount) AS TotalTransactions\n    FROM CustomerValueByLocation\n    GROUP BY State, City\n)\nSELECT \n    ls.*,\n    cvbl.CustomerID,\n    cvbl.FirstName,\n    cvbl.LastName,\n    cvbl.CustomerLTV,\n    cvbl.TransactionCount,\n    RANK() OVER (PARTITION BY ls.State, ls.City ORDER BY cvbl.CustomerLTV DESC) AS LocalRank,\n    PERCENT_RANK() OVER (PARTITION BY ls.State, ls.City ORDER BY cvbl.CustomerLTV) AS LocalPercentile,\n    cvbl.CustomerLTV * 100.0 / ls.TotalLocationValue AS ValueContributionPercentage\nFROM LocationSummary ls\nJOIN CustomerValueByLocation cvbl ON ls.State = cvbl.State AND ls.City = cvbl.City\nWHERE ls.TotalLocationValue > 0\nORDER BY ls.TotalLocationValue DESC, cvbl.CustomerLTV DESC;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

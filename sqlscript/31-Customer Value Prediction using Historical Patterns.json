@@ -1,0 +1,17 @@
+{
+	"name": "31-Customer Value Prediction using Historical Patterns",
+	"properties": {
+		"content": {
+			"query": "-- 17. Customer Future Value Prediction\nWITH CustomerMonthlyValue AS (\n    SELECT \n        s.CustomerID,\n        c.FirstName,\n        c.LastName,\n        c.State,\n        DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1) AS ValueMonth,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyValue,\n        COUNT(*) AS MonthlyTransactions\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c ON s.CustomerID = c.CustomerID\n    GROUP BY s.CustomerID, c.FirstName, c.LastName, c.State, DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1)\n),\nCustomerValueTrends AS (\n    SELECT \n        *,\n        AVG(MonthlyValue) OVER (PARTITION BY CustomerID ORDER BY ValueMonth ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) AS FourMonthMovingAvg,\n        LAG(MonthlyValue, 1) OVER (PARTITION BY CustomerID ORDER BY ValueMonth) AS PrevMonthValue,\n        LAG(MonthlyValue, 12) OVER (PARTITION BY CustomerID ORDER BY ValueMonth) AS ValueYearAgo,\n        SUM(MonthlyValue) OVER (PARTITION BY CustomerID ORDER BY ValueMonth ROWS UNBOUNDED PRECEDING) AS CumulativeLifetimeValue,\n        ROW_NUMBER() OVER (PARTITION BY CustomerID ORDER BY ValueMonth DESC) AS RecencyRank\n    FROM CustomerMonthlyValue\n)\nSELECT \n    CustomerID,\n    FirstName,\n    LastName,\n    State,\n    ValueMonth,\n    MonthlyValue,\n    MonthlyTransactions,\n    FourMonthMovingAvg,\n    PrevMonthValue,\n    ValueYearAgo,\n    CumulativeLifetimeValue,\n    CASE \n        WHEN PrevMonthValue > 0 \n        THEN ((MonthlyValue - PrevMonthValue) / PrevMonthValue) * 100 \n        ELSE NULL \n    END AS MonthlyGrowthRate,\n    CASE \n        WHEN ValueYearAgo > 0 \n        THEN ((MonthlyValue - ValueYearAgo) / ValueYearAgo) * 100 \n        ELSE NULL \n    END AS YearlyGrowthRate,\n    CASE \n        WHEN RecencyRank = 1 THEN 'Current'\n        WHEN RecencyRank = 2 THEN 'Last Month'\n        WHEN RecencyRank <= 6 THEN 'Recent'\n        ELSE 'Historical'\n    END AS DataRecency,\n    PERCENT_RANK() OVER (PARTITION BY ValueMonth ORDER BY MonthlyValue) AS MonthlyValuePercentile,\n    NTILE(5) OVER (ORDER BY CumulativeLifetimeValue DESC) AS LifetimeValueQuintile\nFROM CustomerValueTrends\nORDER BY CustomerID, ValueMonth DESC;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

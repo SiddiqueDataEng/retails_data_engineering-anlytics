@@ -1,0 +1,17 @@
+{
+	"name": "29-Customer Cohort Retention Analysis",
+	"properties": {
+		"content": {
+			"query": "-- 15. Customer Cohort Retention Analysis\nWITH CustomerCohorts AS (\n    SELECT \n        s.CustomerID,\n        DATEFROMPARTS(YEAR(MIN(s.TransactionDate)), MONTH(MIN(s.TransactionDate)), 1) AS CohortMonth\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    GROUP BY s.CustomerID\n),\nCustomerMonthlyActivity AS (\n    SELECT \n        cc.CustomerID,\n        cc.CohortMonth,\n        DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1) AS ActivityMonth,\n        DATEDIFF(MONTH, cc.CohortMonth, DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1)) AS PeriodNumber\n    FROM CustomerCohorts cc\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON cc.CustomerID = s.CustomerID\n    GROUP BY cc.CustomerID, cc.CohortMonth, DATEFROMPARTS(YEAR(s.TransactionDate), MONTH(s.TransactionDate), 1)\n),\nCohortAnalysis AS (\n    SELECT \n        CohortMonth,\n        PeriodNumber,\n        COUNT(DISTINCT CustomerID) AS ActiveCustomers\n    FROM CustomerMonthlyActivity\n    GROUP BY CohortMonth, PeriodNumber\n)\nSELECT \n    CohortMonth,\n    PeriodNumber,\n    ActiveCustomers,\n    FIRST_VALUE(ActiveCustomers) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber) AS CohortSize,\n    CAST(ActiveCustomers AS FLOAT) / FIRST_VALUE(ActiveCustomers) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber) * 100 AS RetentionRate,\n    LAG(ActiveCustomers, 1) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber) AS PreviousMonthActive,\n    CASE \n        WHEN LAG(ActiveCustomers, 1) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber) > 0 \n        THEN ((ActiveCustomers - LAG(ActiveCustomers, 1) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber)) / CAST(LAG(ActiveCustomers, 1) OVER (PARTITION BY CohortMonth ORDER BY PeriodNumber) AS FLOAT)) * 100 \n        ELSE NULL \n    END AS MonthlyRetentionChange\nFROM CohortAnalysis\nORDER BY CohortMonth, PeriodNumber;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

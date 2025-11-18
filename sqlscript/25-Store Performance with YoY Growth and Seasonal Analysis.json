@@ -1,0 +1,17 @@
+{
+	"name": "25-Store Performance with YoY Growth and Seasonal Analysis",
+	"properties": {
+		"content": {
+			"query": "-- 11. Store Year-over-Year Growth and Seasonal Performance\nWITH StoreMonthlySales AS (\n    SELECT \n        st.StoreID,\n        st.StoreName,\n        st.Region,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n        COUNT(*) AS TransactionCount\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS st\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON st.StoreID = s.StoreID\n    GROUP BY st.StoreID, st.StoreName, st.Region, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nStoreYoY AS (\n    SELECT \n        StoreID,\n        StoreName,\n        Region,\n        SalesYear,\n        SalesMonth,\n        MonthlyRevenue,\n        TransactionCount,\n        LAG(MonthlyRevenue, 12) OVER (PARTITION BY StoreID ORDER BY SalesYear, SalesMonth) AS RevenueSameMonthLastYear,\n        LAG(TransactionCount, 12) OVER (PARTITION BY StoreID ORDER BY SalesYear, SalesMonth) AS TransactionsSameMonthLastYear\n    FROM StoreMonthlySales\n)\nSELECT \n    *,\n    CASE \n        WHEN RevenueSameMonthLastYear > 0 \n        THEN ((MonthlyRevenue - RevenueSameMonthLastYear) / RevenueSameMonthLastYear) * 100 \n        ELSE NULL \n    END AS YoYRevenueGrowth,\n    CASE \n        WHEN TransactionsSameMonthLastYear > 0 \n        THEN ((TransactionCount - TransactionsSameMonthLastYear) / TransactionsSameMonthLastYear) * 100 \n        ELSE NULL \n    END AS YoYTransactionGrowth,\n    RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue DESC) AS MonthlyRevenueRank,\n    PERCENT_RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue) AS MonthlyRevenuePercentile\nFROM StoreYoY\nWHERE RevenueSameMonthLastYear IS NOT NULL\nORDER BY StoreID, SalesYear, SalesMonth;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

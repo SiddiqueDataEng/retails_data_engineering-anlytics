@@ -1,0 +1,17 @@
+{
+	"name": "28-Sales Velocity and Momentum Analysis",
+	"properties": {
+		"content": {
+			"query": "-- 14. Sales Velocity and Growth Momentum\nWITH DailySalesVelocity AS (\n    SELECT \n        CAST(s.TransactionDate AS DATE) AS SalesDate,\n        COUNT(*) AS DailyTransactions,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS DailyRevenue,\n        SUM(s.Quantity) AS DailyQuantity,\n        AVG(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS AvgTransactionValue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    GROUP BY CAST(s.TransactionDate AS DATE)\n),\nSalesMomentum AS (\n    SELECT \n        SalesDate,\n        DailyTransactions,\n        DailyRevenue,\n        DailyQuantity,\n        AvgTransactionValue,\n        LAG(DailyRevenue, 1) OVER (ORDER BY SalesDate) AS PreviousDayRevenue,\n        LAG(DailyRevenue, 7) OVER (ORDER BY SalesDate) AS RevenueWeekAgo,\n        AVG(DailyRevenue) OVER (ORDER BY SalesDate ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS WeeklyMovingAvg,\n        SUM(DailyRevenue) OVER (ORDER BY SalesDate ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS WeeklyRunningTotal\n    FROM DailySalesVelocity\n)\nSELECT \n    *,\n    CASE \n        WHEN PreviousDayRevenue > 0 \n        THEN ((DailyRevenue - PreviousDayRevenue) / PreviousDayRevenue) * 100 \n        ELSE NULL \n    END AS DayOverDayGrowth,\n    CASE \n        WHEN RevenueWeekAgo > 0 \n        THEN ((DailyRevenue - RevenueWeekAgo) / RevenueWeekAgo) * 100 \n        ELSE NULL \n    END AS WeekOverWeekGrowth,\n    CASE \n        WHEN WeeklyMovingAvg > 0 \n        THEN ((DailyRevenue - WeeklyMovingAvg) / WeeklyMovingAvg) * 100 \n        ELSE NULL \n    END AS DeviationFromWeeklyAvg,\n    RANK() OVER (ORDER BY DailyRevenue DESC) AS AllTimeDailyRank,\n    PERCENT_RANK() OVER (ORDER BY DailyRevenue) AS DailyRevenuePercentile\nFROM SalesMomentum\nORDER BY SalesDate DESC;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "30-Product Lifecycle and Trend Analysis",
+	"properties": {
+		"content": {
+			"query": "-- 16. Product Lifecycle and Sales Trends\nWITH ProductMonthlyTrends AS (\n    SELECT \n        p.ProductID,\n        p.ProductName,\n        p.Brand,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        SUM(s.Quantity) AS MonthlyQuantity,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n        COUNT(DISTINCT s.CustomerID) AS UniqueCustomers\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON p.ProductID = s.ProductID\n    GROUP BY p.ProductID, p.ProductName, p.Brand, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nProductTrendAnalysis AS (\n    SELECT \n        *,\n        LAG(MonthlyRevenue, 1) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth) AS PrevMonthRevenue,\n        LAG(MonthlyRevenue, 12) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth) AS RevenueYearAgo,\n        AVG(MonthlyRevenue) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS ThreeMonthMovingAvg,\n        SUM(MonthlyRevenue) OVER (PARTITION BY ProductID ORDER BY SalesYear, SalesMonth ROWS UNBOUNDED PRECEDING) AS CumulativeRevenue,\n        RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue DESC) AS MonthlyRank\n    FROM ProductMonthlyTrends\n)\nSELECT \n    *,\n    CASE \n        WHEN PrevMonthRevenue > 0 \n        THEN ((MonthlyRevenue - PrevMonthRevenue) / PrevMonthRevenue) * 100 \n        ELSE NULL \n    END AS MonthOverMonthGrowth,\n    CASE \n        WHEN RevenueYearAgo > 0 \n        THEN ((MonthlyRevenue - RevenueYearAgo) / RevenueYearAgo) * 100 \n        ELSE NULL \n    END AS YearOverYearGrowth,\n    CASE \n        WHEN ThreeMonthMovingAvg > 0 \n        THEN ((MonthlyRevenue - ThreeMonthMovingAvg) / ThreeMonthMovingAvg) * 100 \n        ELSE NULL \n    END AS DeviationFromTrend,\n    PERCENT_RANK() OVER (PARTITION BY SalesYear, SalesMonth ORDER BY MonthlyRevenue) AS MonthlyPercentile\nFROM ProductTrendAnalysis\nORDER BY ProductID, SalesYear, SalesMonth;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

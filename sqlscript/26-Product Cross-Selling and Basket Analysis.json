@@ -1,0 +1,17 @@
+{
+	"name": "26-Product Cross-Selling and Basket Analysis",
+	"properties": {
+		"content": {
+			"query": "-- 12. Product Cross-Selling Analysis with Window Functions\nWITH TransactionProducts AS (\n    SELECT \n        s.TransactionID,\n        s.ProductID,\n        p.ProductName,\n        p.CategoryID\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p ON s.ProductID = p.ProductID\n),\nProductPairs AS (\n    SELECT \n        tp1.ProductID AS Product1,\n        tp1.ProductName AS Product1Name,\n        tp2.ProductID AS Product2,\n        tp2.ProductName AS Product2Name,\n        COUNT(*) AS CoOccurrenceCount\n    FROM TransactionProducts tp1\n    JOIN TransactionProducts tp2 ON tp1.TransactionID = tp2.TransactionID\n    WHERE tp1.ProductID < tp2.ProductID\n    GROUP BY tp1.ProductID, tp1.ProductName, tp2.ProductID, tp2.ProductName\n),\nProductPopularity AS (\n    SELECT \n        ProductID,\n        COUNT(DISTINCT TransactionID) AS TransactionCount\n    FROM TransactionProducts\n    GROUP BY ProductID\n)\nSELECT \n    pp.Product1,\n    pp.Product1Name,\n    pp.Product2,\n    pp.Product2Name,\n    pp.CoOccurrenceCount,\n    pop1.TransactionCount AS Product1Popularity,\n    pop2.TransactionCount AS Product2Popularity,\n    pp.CoOccurrenceCount * 100.0 / pop1.TransactionCount AS Product1AssociationRate,\n    pp.CoOccurrenceCount * 100.0 / pop2.TransactionCount AS Product2AssociationRate,\n    RANK() OVER (ORDER BY pp.CoOccurrenceCount DESC) AS OverallRank,\n    RANK() OVER (PARTITION BY pp.Product1 ORDER BY pp.CoOccurrenceCount DESC) AS RankForProduct1\nFROM ProductPairs pp\nJOIN ProductPopularity pop1 ON pp.Product1 = pop1.ProductID\nJOIN ProductPopularity pop2 ON pp.Product2 = pop2.ProductID\nWHERE pp.CoOccurrenceCount > 5\nORDER BY pp.CoOccurrenceCount DESC;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

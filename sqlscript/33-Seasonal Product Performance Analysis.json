@@ -1,0 +1,17 @@
+{
+	"name": "33-Seasonal Product Performance Analysis",
+	"properties": {
+		"content": {
+			"query": "-- 19. Seasonal Product Performance and Timing\nWITH ProductSeasonalSales AS (\n    SELECT \n        p.ProductID,\n        p.ProductName,\n        p.Brand,\n        YEAR(s.TransactionDate) AS SalesYear,\n        MONTH(s.TransactionDate) AS SalesMonth,\n        DATEPART(QUARTER, s.TransactionDate) AS SalesQuarter,\n        CASE \n            WHEN MONTH(s.TransactionDate) IN (12, 1, 2) THEN 'Winter'\n            WHEN MONTH(s.TransactionDate) IN (3, 4, 5) THEN 'Spring'\n            WHEN MONTH(s.TransactionDate) IN (6, 7, 8) THEN 'Summer'\n            ELSE 'Fall'\n        END AS Season,\n        SUM(s.Quantity) AS SeasonalQuantity,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS SeasonalRevenue\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS p\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON p.ProductID = s.ProductID\n    GROUP BY p.ProductID, p.ProductName, p.Brand, YEAR(s.TransactionDate), MONTH(s.TransactionDate), DATEPART(QUARTER, s.TransactionDate)\n),\nProductSeasonalTrends AS (\n    SELECT \n        ProductID,\n        ProductName,\n        Brand,\n        Season,\n        AVG(SeasonalRevenue) AS AvgSeasonalRevenue,\n        SUM(SeasonalRevenue) AS TotalSeasonalRevenue,\n        COUNT(*) AS SeasonsTracked\n    FROM ProductSeasonalSales\n    GROUP BY ProductID, ProductName, Brand, Season\n),\nSeasonalRankings AS (\n    SELECT \n        *,\n        RANK() OVER (PARTITION BY ProductID ORDER BY AvgSeasonalRevenue DESC) AS BestSeasonRank,\n        RANK() OVER (PARTITION BY ProductID ORDER BY AvgSeasonalRevenue ASC) AS WorstSeasonRank,\n        PERCENT_RANK() OVER (PARTITION BY Season ORDER BY AvgSeasonalRevenue) AS SeasonalPercentile,\n        LAG(AvgSeasonalRevenue, 1) OVER (PARTITION BY ProductID ORDER BY \n            CASE Season \n                WHEN 'Winter' THEN 1\n                WHEN 'Spring' THEN 2  \n                WHEN 'Summer' THEN 3\n                WHEN 'Fall' THEN 4\n            END) AS PreviousSeasonRevenue\n    FROM ProductSeasonalTrends\n)\nSELECT \n    *,\n    CASE \n        WHEN PreviousSeasonRevenue > 0 \n        THEN ((AvgSeasonalRevenue - PreviousSeasonRevenue) / PreviousSeasonRevenue) * 100 \n        ELSE NULL \n    END AS SeasonalSequentialGrowth,\n    CASE \n        WHEN BestSeasonRank = 1 THEN 'Peak Season'\n        WHEN WorstSeasonRank = 1 THEN 'Off Season'\n        ELSE 'Moderate Season'\n    END AS SeasonalPerformance,\n    NTILE(4) OVER (PARTITION BY Season ORDER BY AvgSeasonalRevenue DESC) AS SeasonalPerformanceQuartile\nFROM SeasonalRankings\nORDER BY ProductID, \n    CASE Season \n        WHEN 'Winter' THEN 1\n        WHEN 'Spring' THEN 2  \n        WHEN 'Summer' THEN 3\n        WHEN 'Fall' THEN 4\n    END;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

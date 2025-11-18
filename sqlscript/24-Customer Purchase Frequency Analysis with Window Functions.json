@@ -1,0 +1,17 @@
+{
+	"name": "24-Customer Purchase Frequency Analysis with Window Functions",
+	"properties": {
+		"content": {
+			"query": "-- 24. Customer Purchase Frequency and Behavioral Patterns (CORRECTED)\nWITH CustomerPurchaseStats AS (\n    SELECT \n        s.CustomerID,\n        s.TransactionDate,\n        s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0) AS TransactionAmount,\n        LAG(s.TransactionDate) OVER (PARTITION BY s.CustomerID ORDER BY s.TransactionDate) AS PrevPurchaseDate,\n        LEAD(s.TransactionDate) OVER (PARTITION BY s.CustomerID ORDER BY s.TransactionDate) AS NextPurchaseDate\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s\n),\nCustomerBehavior AS (\n    SELECT \n        cps.CustomerID,\n        c.FirstName,\n        c.LastName,\n        c.State,\n        COUNT(*) AS TotalPurchases,\n        SUM(cps.TransactionAmount) AS TotalSpent,\n        AVG(cps.TransactionAmount) AS AvgPurchaseValue,\n        MIN(cps.TransactionDate) AS FirstPurchase,\n        MAX(cps.TransactionDate) AS LastPurchase,\n        AVG(DATEDIFF(DAY, cps.PrevPurchaseDate, cps.TransactionDate)) AS AvgDaysBetweenPurchases,\n        MAX(DATEDIFF(DAY, cps.PrevPurchaseDate, cps.TransactionDate)) AS MaxDaysBetweenPurchases\n    FROM CustomerPurchaseStats cps\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS c ON cps.CustomerID = c.CustomerID\n    WHERE cps.PrevPurchaseDate IS NOT NULL\n    GROUP BY cps.CustomerID, c.FirstName, c.LastName, c.State\n),\nCustomerStatusAnalysis AS (\n    SELECT \n        *,\n        DATEDIFF(DAY, LastPurchase, CAST(GETDATE() AS DATE)) AS DaysSinceLastPurchase\n    FROM CustomerBehavior\n)\nSELECT \n    *,\n    CASE \n        WHEN DaysSinceLastPurchase > AvgDaysBetweenPurchases * 2 THEN 'At Risk'\n        WHEN DaysSinceLastPurchase > AvgDaysBetweenPurchases * 1.5 THEN 'Watch List'\n        ELSE 'Active'\n    END AS CustomerStatus,\n    NTILE(4) OVER (ORDER BY TotalSpent DESC) AS SpendingQuartile,\n    NTILE(4) OVER (ORDER BY TotalPurchases DESC) AS FrequencyQuartile,\n    RANK() OVER (ORDER BY TotalSpent DESC) AS SpendingRank\nFROM CustomerStatusAnalysis\nORDER BY TotalSpent DESC;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

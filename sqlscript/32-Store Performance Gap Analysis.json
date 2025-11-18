@@ -1,0 +1,17 @@
+{
+	"name": "32-Store Performance Gap Analysis",
+	"properties": {
+		"content": {
+			"query": "-- 18. Store Performance Gap Analysis with Benchmarks\nWITH StorePerformance AS (\n    SELECT \n        st.StoreID,\n        st.StoreName,\n        st.Region,\n        st.StoreType,\n        YEAR(s.TransactionDate) AS PerformanceYear,\n        MONTH(s.TransactionDate) AS PerformanceMonth,\n        COUNT(*) AS MonthlyTransactions,\n        SUM(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS MonthlyRevenue,\n        AVG(s.Quantity * s.UnitPrice - ISNULL(s.Discount, 0)) AS AvgTransactionValue,\n        COUNT(DISTINCT s.CustomerID) AS UniqueCustomers\n    FROM OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS st\n    JOIN OPENROWSET(\n        BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n        FORMAT = 'PARQUET'\n    ) AS s ON st.StoreID = s.StoreID\n    GROUP BY st.StoreID, st.StoreName, st.Region, st.StoreType, YEAR(s.TransactionDate), MONTH(s.TransactionDate)\n),\nStoreBenchmarks AS (\n    SELECT \n        *,\n        AVG(MonthlyRevenue) OVER (PARTITION BY Region, StoreType ORDER BY PerformanceYear, PerformanceMonth ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS RegionalTypeMovingAvg,\n        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY MonthlyRevenue) OVER (PARTITION BY Region, StoreType, PerformanceYear, PerformanceMonth) AS RegionalTypeMedian,\n        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY MonthlyRevenue) OVER (PARTITION BY Region, StoreType, PerformanceYear, PerformanceMonth) AS RegionalTypeTopQuartile,\n        RANK() OVER (PARTITION BY Region, StoreType, PerformanceYear, PerformanceMonth ORDER BY MonthlyRevenue DESC) AS RegionalTypeRank\n    FROM StorePerformance\n)\nSELECT \n    *,\n    MonthlyRevenue - RegionalTypeMovingAvg AS RevenueVsMovingAvg,\n    CASE \n        WHEN RegionalTypeMovingAvg > 0 \n        THEN ((MonthlyRevenue - RegionalTypeMovingAvg) / RegionalTypeMovingAvg) * 100 \n        ELSE NULL \n    END AS RevenueVsMovingAvgPct,\n    CASE \n        WHEN MonthlyRevenue >= RegionalTypeTopQuartile THEN 'Top Performer'\n        WHEN MonthlyRevenue >= RegionalTypeMedian THEN 'Above Average'\n        ELSE 'Below Average'\n    END AS PerformanceCategory,\n    LAG(RegionalTypeRank, 1) OVER (PARTITION BY StoreID ORDER BY PerformanceYear, PerformanceMonth) AS PreviousMonthRank,\n    RegionalTypeRank - LAG(RegionalTypeRank, 1) OVER (PARTITION BY StoreID ORDER BY PerformanceYear, PerformanceMonth) AS RankChange\nFROM StoreBenchmarks\nORDER BY StoreID, PerformanceYear, PerformanceMonth;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
