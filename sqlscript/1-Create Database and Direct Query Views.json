@@ -1,8 +1,8 @@
 {
-	"name": "SQL script 1",
+	"name": "1-Create Database and Direct Query Views",
 	"properties": {
 		"content": {
-			"query": "",
+			"query": "\n-- Create views using OPENROWSET with actual file paths\nCREATE VIEW dbo.vw_customers AS \nSELECT *\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/customers_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS customers;\nGO\n\nCREATE VIEW dbo.vw_products AS \nSELECT *\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/products.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS products;\nGO\n\nCREATE VIEW dbo.vw_sales AS \nSELECT *\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/sales_clean.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS sales;\nGO\n\nCREATE VIEW dbo.vw_stores AS \nSELECT *\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/stores.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS stores;\nGO\n\nCREATE VIEW dbo.vw_retail_analytical AS \nSELECT *\nFROM OPENROWSET(\n    BULK 'https://adls4salesdata.blob.core.windows.net/transformed-data/retail_analytical_dataset.parquet/*.parquet',\n    FORMAT = 'PARQUET'\n) AS retail_analytical;\nGO",
 			"metadata": {
 				"language": "sql"
 			},
