@@ -1,0 +1,17 @@
+{
+	"name": "5-Quick Analysis Queries Using Views",
+	"properties": {
+		"content": {
+			"query": "-- Test the views\nSELECT TOP 10 * FROM dbo.vw_sales_enriched;\nSELECT TOP 10 * FROM dbo.vw_product_performance;\nSELECT TOP 10 * FROM dbo.vw_customer_analytics;\nSELECT TOP 10 * FROM dbo.vw_store_performance;\n\n-- Quick business insights\n-- 1. Total revenue overview\nSELECT \n    SUM(TotalRevenue) AS OverallRevenue,\n    COUNT(*) AS TotalTransactions,\n    AVG(AvgTransactionValue) AS OverallAvgTransaction\nFROM dbo.vw_daily_sales_summary;\n\n-- 2. Top performing products\nSELECT TOP 10 *\nFROM dbo.vw_product_performance \nORDER BY TotalRevenue DESC;\n\n-- 3. Customer segmentation summary\nSELECT \n    CustomerSegment,\n    COUNT(*) AS CustomerCount,\n    AVG(TotalSpent) AS AvgSpending,\n    AVG(TransactionCount) AS AvgTransactions\nFROM dbo.vw_customer_segments\nGROUP BY CustomerSegment\nORDER BY AvgSpending DESC;\n\n-- 4. Monthly trends\nSELECT \n    SalesYear,\n    SalesMonth,\n    MonthlyRevenue,\n    TransactionCount,\n    TotalQuantity\nFROM dbo.vw_monthly_sales_trend\nORDER BY SalesYear, SalesMonth;\n\n-- 5. Store performance comparison\nSELECT *\nFROM dbo.vw_store_performance\nORDER BY TotalRevenue DESC;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "salesdata",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
