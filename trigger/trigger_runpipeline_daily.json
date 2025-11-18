@@ -1,0 +1,24 @@
+{
+	"name": "trigger_runpipeline_daily",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pipeline_loading_csvfiles_from_localfolder",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 15,
+				"startTime": "2025-11-18T08:19:00",
+				"timeZone": "Pakistan Standard Time"
+			}
+		}
+	}
+}
