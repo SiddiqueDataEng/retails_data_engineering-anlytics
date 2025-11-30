@@ -17,12 +17,13 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "WITH Deduplicated AS (\n    SELECT *,\n           ROW_NUMBER() OVER (PARTITION BY CustomerID ORDER BY CreatedDate DESC) AS rn\n    FROM Customers\n)\nSELECT CustomerID, FirstName, LastName, Email, Phone, City, State, Country, CreatedDate\nFROM Deduplicated\nWHERE rn = 1;\n",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "SqlServerSink",
+						"writeBatchSize": 500,
+						"maxConcurrentConnections": 1,
 						"writeBehavior": "insert",
 						"sqlWriterUseTableLock": false
 					},
@@ -148,7 +149,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "SqlServerTable1",
+						"referenceName": "SqlServerTable_Customer",
 						"type": "DatasetReference"
 					}
 				],
