@@ -9,7 +9,7 @@
 		"type": "AzureSqlTable",
 		"schema": [],
 		"typeProperties": {
-			"schema": "dba",
+			"schema": "dbo",
 			"table": "transactions"
 		}
 	}
