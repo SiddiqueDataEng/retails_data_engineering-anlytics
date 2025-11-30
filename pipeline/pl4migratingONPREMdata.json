@@ -4,7 +4,7 @@
 		"activities": [
 			{
 				"name": "Copydata_Customers",
-				"description": "Linked Service, Self Hosted Integration Services, Azure SQL Database, MS SQL Database, SQL",
+				"description": "Using Linked Service, Self Hosted Integration Services, Azure SQL Database, MS SQL Database, SQL -- Migration Data from SQL Server to Azure SQL Database",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -170,6 +170,7 @@
 			},
 			{
 				"name": "CopyData_Categories",
+				"description": "Using Linked Service, Self Hosted Integration Services, Azure SQL Database, MS SQL Database, SQL -- Migration Data from SQL Server to Azure SQL Database",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
