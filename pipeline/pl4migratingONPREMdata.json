@@ -37,7 +37,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "SqlServerTable_Customer",
+						"referenceName": "SqlServerTable1",
 						"type": "DatasetReference"
 					}
 				],
