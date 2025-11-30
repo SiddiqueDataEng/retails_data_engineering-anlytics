@@ -11,6 +11,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage_sink'"
 		},
+		"LS_AzureSqlDatabase_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_AzureSqlDatabase'"
+		},
+		"LS_SqlServerOnPrem_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_SqlServerOnPrem'"
+		},
 		"fs_localdatafolders_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'fs_localdatafolders'"
@@ -18,6 +26,30 @@
 		"AzureDataLakeStorage_sink_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://adls4salesdata.dfs.core.windows.net/"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "sqlserver4salesdata.database.windows.net"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "sqldb4salesdata"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "Siddique"
+		},
+		"LS_SqlServerOnPrem_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "DESKTOP-A3PO7VB\\SQLEXPRESS"
+		},
+		"LS_SqlServerOnPrem_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "AbbasiCashandCarry"
+		},
+		"LS_SqlServerOnPrem_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sa"
 		},
 		"fs_localdatafolders_properties_typeProperties_host": {
 			"type": "string",
@@ -57,11 +89,35 @@
 					"AzureDataLakeStorage_sink_accountKey": {
 						"value": "[parameters('AzureDataLakeStorage_sink_accountKey')]"
 					},
+					"LS_AzureSqlDatabase_password": {
+						"value": "[parameters('LS_AzureSqlDatabase_password')]"
+					},
+					"LS_SqlServerOnPrem_password": {
+						"value": "[parameters('LS_SqlServerOnPrem_password')]"
+					},
 					"fs_localdatafolders_password": {
 						"value": "[parameters('fs_localdatafolders_password')]"
 					},
 					"AzureDataLakeStorage_sink_properties_typeProperties_url": {
 						"value": "[parameters('AzureDataLakeStorage_sink_properties_typeProperties_url')]"
+					},
+					"LS_AzureSqlDatabase_properties_typeProperties_server": {
+						"value": "[parameters('LS_AzureSqlDatabase_properties_typeProperties_server')]"
+					},
+					"LS_AzureSqlDatabase_properties_typeProperties_database": {
+						"value": "[parameters('LS_AzureSqlDatabase_properties_typeProperties_database')]"
+					},
+					"LS_AzureSqlDatabase_properties_typeProperties_userName": {
+						"value": "[parameters('LS_AzureSqlDatabase_properties_typeProperties_userName')]"
+					},
+					"LS_SqlServerOnPrem_properties_typeProperties_server": {
+						"value": "[parameters('LS_SqlServerOnPrem_properties_typeProperties_server')]"
+					},
+					"LS_SqlServerOnPrem_properties_typeProperties_database": {
+						"value": "[parameters('LS_SqlServerOnPrem_properties_typeProperties_database')]"
+					},
+					"LS_SqlServerOnPrem_properties_typeProperties_userName": {
+						"value": "[parameters('LS_SqlServerOnPrem_properties_typeProperties_userName')]"
 					},
 					"fs_localdatafolders_properties_typeProperties_host": {
 						"value": "[parameters('fs_localdatafolders_properties_typeProperties_host')]"
@@ -72,6 +128,26 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "adf4salesdata_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'adf4salesdata_ArmTemplate_0')]"
+			]
 		}
 	]
 }

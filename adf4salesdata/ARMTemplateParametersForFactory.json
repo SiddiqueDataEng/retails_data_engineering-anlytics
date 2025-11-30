@@ -8,11 +8,35 @@
 		"AzureDataLakeStorage_sink_accountKey": {
 			"value": ""
 		},
+		"LS_AzureSqlDatabase_password": {
+			"value": ""
+		},
+		"LS_SqlServerOnPrem_password": {
+			"value": ""
+		},
 		"fs_localdatafolders_password": {
 			"value": ""
 		},
 		"AzureDataLakeStorage_sink_properties_typeProperties_url": {
 			"value": "https://adls4salesdata.dfs.core.windows.net/"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_server": {
+			"value": "sqlserver4salesdata.database.windows.net"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_database": {
+			"value": "sqldb4salesdata"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_userName": {
+			"value": "Siddique"
+		},
+		"LS_SqlServerOnPrem_properties_typeProperties_server": {
+			"value": "DESKTOP-A3PO7VB\\SQLEXPRESS"
+		},
+		"LS_SqlServerOnPrem_properties_typeProperties_database": {
+			"value": "AbbasiCashandCarry"
+		},
+		"LS_SqlServerOnPrem_properties_typeProperties_userName": {
+			"value": "sa"
 		},
 		"fs_localdatafolders_properties_typeProperties_host": {
 			"value": "C:\\Users\\DataEng\\Desktop\\DataTeam (SQL+Python)\\Project\\sourcedata"
