@@ -17,6 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
+						"sqlReaderQuery": "WITH cte AS (\n    SELECT *,\n           ROW_NUMBER() OVER (PARTITION BY CustomerID ORDER BY CreatedDate DESC) AS rn\n    FROM Customers\n)\nSELECT CustomerID, FirstName, LastName, Email, Phone, City, State, Country, CreatedDate\nFROM cte\nWHERE rn = 1;\n",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
