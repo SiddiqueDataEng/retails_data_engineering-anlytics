@@ -187,6 +187,8 @@
 					},
 					"sink": {
 						"type": "AzureSqlSink",
+						"writeBatchSize": 100,
+						"maxConcurrentConnections": 1,
 						"writeBehavior": "upsert",
 						"upsertSettings": {
 							"useTempDB": true,
@@ -200,6 +202,32 @@
 					"enableStaging": false,
 					"translator": {
 						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "CategoryID",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "CategoryID",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "CategoryName",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "CategoryName",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							}
+						],
 						"typeConversion": true,
 						"typeConversionSettings": {
 							"allowDataTruncation": true,
