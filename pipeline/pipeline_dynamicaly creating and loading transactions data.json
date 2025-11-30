@@ -78,7 +78,10 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"functionName": "DataEng"
+				}
 			}
 		],
 		"annotations": []
