@@ -21,7 +21,12 @@
 					"name": "sink1"
 				}
 			],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "AlterRow1",
+					"description": "UpdateIf(isMatch == true()),\nInsertIf(isMatch == false())"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          TransactionID as string,",
@@ -39,7 +44,8 @@
 				"     validateSchema: false,",
 				"     limit: 100,",
 				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 sink(allowSchemaDrift: true,",
+				"source1 alterRow() ~> AlterRow1",
+				"AlterRow1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:true,",
 				"     insertable:true,",
