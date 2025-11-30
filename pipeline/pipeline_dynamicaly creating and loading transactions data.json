@@ -63,7 +63,8 @@
 					"dataset": {
 						"referenceName": "SourceTransactionCSVDataFromADLS2",
 						"type": "DatasetReference"
-					}
+					},
+					"firstRowOnly": true
 				}
 			}
 		],
