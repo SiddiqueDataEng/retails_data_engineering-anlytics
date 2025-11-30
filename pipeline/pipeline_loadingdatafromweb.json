@@ -28,8 +28,13 @@
 					},
 					"sink": {
 						"type": "AzureSqlSink",
+						"writeBatchSize": 50,
+						"preCopyScript": "CREATE TABLE dbo.Subcategories (\n    SubcategoryID INT,\n    SubcategoryName VARCHAR(255),\n    CategoryID INT\n);\n",
+						"maxConcurrentConnections": 1,
 						"writeBehavior": "insert",
-						"sqlWriterUseTableLock": false
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
 					},
 					"enableStaging": false,
 					"translator": {
