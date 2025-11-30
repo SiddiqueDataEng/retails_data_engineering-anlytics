@@ -53,7 +53,19 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          TransactionID,",
+				"          CustomerID,",
+				"          ProductID,",
+				"          Quantity,",
+				"          UnitPrice,",
+				"          Discount,",
+				"          TransactionDate,",
+				"          Hour,",
+				"          StoreID,",
+				"          PaymentMethod",
+				"     )) ~> sink1"
 			]
 		}
 	}
