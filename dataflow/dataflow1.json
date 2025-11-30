@@ -49,23 +49,10 @@
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
-				"     recreate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError',",
-				"     mapColumn(",
-				"          TransactionID,",
-				"          CustomerID,",
-				"          ProductID,",
-				"          Quantity,",
-				"          UnitPrice,",
-				"          Discount,",
-				"          TransactionDate,",
-				"          Hour,",
-				"          StoreID,",
-				"          PaymentMethod",
-				"     )) ~> sink1"
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}
