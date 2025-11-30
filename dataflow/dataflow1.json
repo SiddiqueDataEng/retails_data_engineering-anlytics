@@ -21,11 +21,7 @@
 					"name": "sink1"
 				}
 			],
-			"transformations": [
-				{
-					"name": "AlterRow1"
-				}
-			],
+			"transformations": [],
 			"scriptLines": [
 				"source(output(",
 				"          TransactionID as string,",
@@ -43,13 +39,13 @@
 				"     validateSchema: false,",
 				"     limit: 100,",
 				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 alterRow(insertIf(true())) ~> AlterRow1",
-				"AlterRow1 sink(allowSchemaDrift: true,",
+				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     recreate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
