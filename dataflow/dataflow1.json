@@ -18,7 +18,11 @@
 						"referenceName": "AzureSqlTable1",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "sink1",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureDataLakeStorage_sink",
+						"type": "LinkedServiceReference"
+					}
 				}
 			],
 			"transformations": [],
