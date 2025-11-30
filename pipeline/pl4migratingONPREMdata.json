@@ -4,6 +4,7 @@
 		"activities": [
 			{
 				"name": "Copydata_Customers",
+				"description": "Linked Service, Self Hosted Integration Services, Azure SQL Database, MS SQL Database, SQL",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
