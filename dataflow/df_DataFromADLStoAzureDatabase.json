@@ -24,7 +24,11 @@
 			"transformations": [],
 			"scriptLines": [
 				"parameters{",
-				"     parameter1 as string",
+				"     inputFolderPath as string,",
+				"     inputFileName as string,",
+				"     targetSchema as string,",
+				"     targetTableName as string,",
+				"     columnsJson as string",
 				"}",
 				"source(output(",
 				"          TransactionID as string,",
