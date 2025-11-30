@@ -1,0 +1,14 @@
+{
+	"name": "df_DataFromADLStoAzureDatabase",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				""
+			]
+		}
+	}
+}
