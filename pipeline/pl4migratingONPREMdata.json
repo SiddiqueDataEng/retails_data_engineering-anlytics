@@ -279,7 +279,13 @@
 						"type": "AzureSqlSink",
 						"writeBatchSize": 1000,
 						"maxConcurrentConnections": 1,
-						"writeBehavior": "insert",
+						"writeBehavior": "upsert",
+						"upsertSettings": {
+							"useTempDB": false,
+							"keys": [
+								"ProductID"
+							]
+						},
 						"sqlWriterUseTableLock": false,
 						"disableMetricsCollection": false
 					},
@@ -301,7 +307,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "AzureSqlTable1",
+						"referenceName": "Sink_AzureSql_Table_Products",
 						"type": "DatasetReference"
 					}
 				]

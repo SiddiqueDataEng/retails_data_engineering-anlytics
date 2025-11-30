@@ -1,0 +1,52 @@
+{
+	"name": "Sink_AzureSql_Table_Products",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_AzureSqlDatabase",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ProductID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ProductName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "CategoryID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SubcategoryID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Brand",
+				"type": "nvarchar"
+			},
+			{
+				"name": "CostPrice",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "SellingPrice",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Products"
+		}
+	}
+}
