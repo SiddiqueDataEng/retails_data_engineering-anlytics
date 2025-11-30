@@ -249,7 +249,7 @@
 				]
 			},
 			{
-				"name": "Copydata1",
+				"name": "CopydataProducts",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
