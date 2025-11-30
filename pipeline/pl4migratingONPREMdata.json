@@ -278,8 +278,6 @@
 					"sink": {
 						"type": "AzureSqlSink",
 						"preCopyScript": "IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'Products' AND type = 'U')\nBEGIN\n    CREATE TABLE Products (\n        ProductID INT PRIMARY KEY,\n        ProductName NVARCHAR(200),\n        CategoryID INT,\n        SubcategoryID INT,\n        Brand NVARCHAR(200),\n        CostPrice DECIMAL(18,2),\n        SellingPrice DECIMAL(18,2)\n    );\nEND\n",
-						"writeBehavior": "insert",
-						"sqlWriterUseTableLock": false,
 						"tableOption": "autoCreate",
 						"disableMetricsCollection": false
 					},
