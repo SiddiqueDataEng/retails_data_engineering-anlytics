@@ -22,7 +22,7 @@
 					},
 					"sink": {
 						"type": "SqlServerSink",
-						"writeBatchSize": 500,
+						"writeBatchSize": 1000,
 						"maxConcurrentConnections": 1,
 						"writeBehavior": "upsert",
 						"upsertSettings": {
