@@ -1,0 +1,22 @@
+{
+	"name": "sourceDatafromGithub",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "HttpServer_github",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": "SiddiqueDataEng/retails_data_engineering-anlytics/refs/heads/main/sourcedata/Subcategories.csv"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
