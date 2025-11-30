@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage_sink'"
 		},
+		"HttpServer_github_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'HttpServer_github'"
+		},
 		"LS_AzureSqlDatabase_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_AzureSqlDatabase'"
@@ -26,6 +30,14 @@
 		"AzureDataLakeStorage_sink_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://adls4salesdata.dfs.core.windows.net/"
+		},
+		"HttpServer_github_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://raw.githubusercontent.com/"
+		},
+		"HttpServer_github_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "DataEng"
 		},
 		"LS_AzureSqlDatabase_properties_typeProperties_server": {
 			"type": "string",
@@ -89,6 +101,9 @@
 					"AzureDataLakeStorage_sink_accountKey": {
 						"value": "[parameters('AzureDataLakeStorage_sink_accountKey')]"
 					},
+					"HttpServer_github_password": {
+						"value": "[parameters('HttpServer_github_password')]"
+					},
 					"LS_AzureSqlDatabase_password": {
 						"value": "[parameters('LS_AzureSqlDatabase_password')]"
 					},
@@ -100,6 +115,12 @@
 					},
 					"AzureDataLakeStorage_sink_properties_typeProperties_url": {
 						"value": "[parameters('AzureDataLakeStorage_sink_properties_typeProperties_url')]"
+					},
+					"HttpServer_github_properties_typeProperties_url": {
+						"value": "[parameters('HttpServer_github_properties_typeProperties_url')]"
+					},
+					"HttpServer_github_properties_typeProperties_userName": {
+						"value": "[parameters('HttpServer_github_properties_typeProperties_userName')]"
 					},
 					"LS_AzureSqlDatabase_properties_typeProperties_server": {
 						"value": "[parameters('LS_AzureSqlDatabase_properties_typeProperties_server')]"

@@ -8,6 +8,9 @@
 		"AzureDataLakeStorage_sink_accountKey": {
 			"value": ""
 		},
+		"HttpServer_github_password": {
+			"value": ""
+		},
 		"LS_AzureSqlDatabase_password": {
 			"value": ""
 		},
@@ -19,6 +22,12 @@
 		},
 		"AzureDataLakeStorage_sink_properties_typeProperties_url": {
 			"value": "https://adls4salesdata.dfs.core.windows.net/"
+		},
+		"HttpServer_github_properties_typeProperties_url": {
+			"value": "https://raw.githubusercontent.com/"
+		},
+		"HttpServer_github_properties_typeProperties_userName": {
+			"value": "DataEng"
 		},
 		"LS_AzureSqlDatabase_properties_typeProperties_server": {
 			"value": "sqlserver4salesdata.database.windows.net"
