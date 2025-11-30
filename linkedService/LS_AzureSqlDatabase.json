@@ -1,0 +1,17 @@
+{
+	"name": "LS_AzureSqlDatabase",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "sqlserver4salesdata.database.windows.net",
+			"database": "sqldb4salesdata",
+			"encrypt": "mandatory",
+			"trustServerCertificate": true,
+			"authenticationType": "SQL",
+			"userName": "Siddique",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDFCQTQ2Q0Q5LTI0MTctNEQzMS05QTE2LThCOEYwRTRDNTNCQV9jNjlkY2RiZS01MDdiLTQ0NTMtYmJhYi03NTYxNGU5ODA4M2EiDQp9"
+		}
+	}
+}
