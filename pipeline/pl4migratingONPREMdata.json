@@ -277,6 +277,7 @@
 					},
 					"sink": {
 						"type": "AzureSqlSink",
+						"writeBatchSize": 1000,
 						"maxConcurrentConnections": 1,
 						"writeBehavior": "insert",
 						"sqlWriterUseTableLock": false,
