@@ -20,7 +20,12 @@
 						"referenceName": "SourceTransactionCSVDataFromADLS2",
 						"type": "DatasetReference"
 					},
-					"fieldList": [],
+					"fieldList": [
+						"exists",
+						"lastModified",
+						"size",
+						"structure"
+					],
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
 						"enablePartitionDiscovery": false
