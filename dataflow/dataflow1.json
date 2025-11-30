@@ -23,8 +23,7 @@
 			],
 			"transformations": [
 				{
-					"name": "AlterRow1",
-					"description": "\nInsertIf(isMatch == false())"
+					"name": "AlterRow1"
 				}
 			],
 			"scriptLines": [
@@ -44,9 +43,8 @@
 				"     validateSchema: false,",
 				"     limit: 100,",
 				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 alterRow(updateIf(UpdateIf(true())),",
-				"     insertIf(InsertIf(true())),",
-				"     upsertIf(ERROR_FUNCTION('UpdateIf(isMatch == true()), InsertIf(isMatch == false())'))) ~> AlterRow1",
+				"source1 alterRow(updateIf(isUpdate(TransactionID)),",
+				"     insertIf(InsertIf(true()))) ~> AlterRow1",
 				"AlterRow1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:true,",
