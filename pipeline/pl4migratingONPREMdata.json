@@ -168,7 +168,7 @@
 				]
 			},
 			{
-				"name": "Copy data1",
+				"name": "CopyData_",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
