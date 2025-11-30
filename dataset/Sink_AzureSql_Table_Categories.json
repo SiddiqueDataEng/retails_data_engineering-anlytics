@@ -1,5 +1,5 @@
 {
-	"name": "AzureSql_Table_customers",
+	"name": "Sink_AzureSql_Table_Categories",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LS_AzureSqlDatabase",
@@ -48,7 +48,7 @@
 		],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "Customers"
+			"table": "Categories"
 		}
 	}
 }
