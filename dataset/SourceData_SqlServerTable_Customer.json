@@ -1,5 +1,5 @@
 {
-	"name": "SqlServerTable_Customer",
+	"name": "SourceData_SqlServerTable_Customer",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LS_SqlServerOnPrem",

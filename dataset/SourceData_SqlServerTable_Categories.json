@@ -1,5 +1,5 @@
 {
-	"name": "SqlServerTable_Categories",
+	"name": "SourceData_SqlServerTable_Categories",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LS_SqlServerOnPrem",
