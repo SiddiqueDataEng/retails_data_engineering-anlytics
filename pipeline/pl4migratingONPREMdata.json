@@ -24,7 +24,13 @@
 						"type": "SqlServerSink",
 						"writeBatchSize": 500,
 						"maxConcurrentConnections": 1,
-						"writeBehavior": "insert",
+						"writeBehavior": "upsert",
+						"upsertSettings": {
+							"useTempDB": true,
+							"keys": [
+								"CustomerID"
+							]
+						},
 						"sqlWriterUseTableLock": false
 					},
 					"enableStaging": false,
