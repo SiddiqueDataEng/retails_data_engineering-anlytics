@@ -4,7 +4,7 @@
 		"activities": [
 			{
 				"name": "Notebook1",
-				"type": "SynapseNotebook",
+				"type": "DatabricksNotebook",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -13,10 +13,7 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [],
-				"typeProperties": {
-					"snapshot": true
-				}
+				"userProperties": []
 			}
 		],
 		"annotations": []
