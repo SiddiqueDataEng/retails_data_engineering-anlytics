@@ -252,7 +252,7 @@
 			},
 			{
 				"name": "CopydataProducts",
-				"description": "Pre-copy Script",
+				"description": "Uploading CVS data directly from local csv file to azure database",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
