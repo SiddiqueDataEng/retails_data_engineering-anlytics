@@ -26,7 +26,7 @@
 						"maxConcurrentConnections": 1,
 						"writeBehavior": "upsert",
 						"upsertSettings": {
-							"useTempDB": true,
+							"useTempDB": false,
 							"keys": [
 								"CustomerID"
 							]
